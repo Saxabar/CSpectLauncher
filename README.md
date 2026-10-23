@@ -1,7 +1,7 @@
 # CSpect Launcher
 
 A game launcher for the ZX Spectrum Next emulator **CSpect**.
-Version 1.1 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
+Version 1.2 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 

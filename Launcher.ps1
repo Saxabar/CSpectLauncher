@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # per spostare i file nel Cesti
 
 # ---------- informazioni sul programma (finestra Info) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.1'
+$AppVersion   = '1.2'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # pagina per gli aggiornamenti
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'

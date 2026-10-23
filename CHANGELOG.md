@@ -3,7 +3,7 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
-## Unreleased
+## 1.2
 
 - .bas/.tap games: F5 screenshots are saved next to the game (they ended up in the temporary folder)
 - .bas/.tap games: SD card images of previous launches are deleted from the temporary folder
