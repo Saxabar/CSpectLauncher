@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to CSpect Launcher.
-Each version has a "## <version>" section: it is used as the text of the GitHub release.
+Each version has a "## <version>" section, used as the text of the GitHub release.
 
 ## 1.0
 
