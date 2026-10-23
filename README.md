@@ -5,7 +5,7 @@ Version 1.2 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 
-CSpect Launcher is a simple Windows front-end that lists the ZX Spectrum Next games in a folder and starts them in the CSpect emulator with one click. You can rate games, add cover pictures, hide games you do not want to see, set custom launch parameters per game and much more.
+CSpect Launcher is a simple Windows and Linux front-end that lists the ZX Spectrum Next games in a folder and starts them in the CSpect emulator with one click. You can rate games, add cover pictures, hide games you do not want to see, set custom launch parameters per game and much more.
 
 The interface is available in **English, Italian, Spanish, French and German**.
 
