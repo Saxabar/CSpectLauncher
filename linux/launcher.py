@@ -57,6 +57,11 @@ IS_WIN = (os.name == 'nt')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 INI_PATH = os.path.join(ROOT, 'games.ini')
 GAME_EXTS = ('.nex', '.snx', '.sna')
+OS_EXTS = ('.bas', '.tap')                  # started with NextZXOS (when there is no .nex/.snx/.sna)
+OS_DIRS = ('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
+# NextZXOS system files and SD card images created on the fly
+OS_WORK = (os.path.join(os.environ.get('TEMP', ''), 'CSpectLauncher') if IS_WIN else
+           os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'cspect-launcher'))
 IMAGE_EXTS = ('.png', '.jpg', '.jpeg', '.gif', '.bmp')
 DEFAULT_ARGS = '-w2 -vsync -zxnext -mmc=./'
 SHOT_RE = re.compile(r'_\d{4}_\d{2}_\d{2}___\d{2}_\d{2}_\d{2}$')
@@ -114,7 +119,7 @@ STRINGS = {
         "unplayable": "(not launchable)",
         "fileLine": "File: {0}\nParameters: {1}",
         "fileChoose": "File: to be chosen on first launch ({0} executables)\nParameters: {1}",
-        "noFile": "No .nex/.snx/.sna file - set it in games.ini",
+        "noFile": "No .nex/.snx/.sna/.bas/.tap file - set it in games.ini",
         "status": "{0} of {1} games   -   Enter/double-click: play   Ctrl+1..5: rating   F5: reload   Esc: exit",
         "launched": "Launched: {0}",
         "launchErr": "Launch error:\n{0}",
@@ -124,7 +129,21 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Cancel",
         "saveErr": "Cannot save to games.ini:\n{0}",
-        "noExeMsg": "No .nex / .snx / .sna file found in:\n{0}\n\nSet the file to launch in games.ini (file= key).",
+        "noExeMsg": "No .nex / .snx / .sna / .bas / .tap file found in:\n{0}\n\nSet the file to launch in games.ini (file= key).",
+        "osTag": "(with NextZXOS)",
+        "osPrep": "Preparing NextZXOS for {0}...",
+        "osNoImage": "SD card image with NextZXOS not found:\n{0}\n\nIt is needed to start .bas and .tap files (usually zxnext.sd in the CSpect folder, created by ZXOS.sh).\n\nDo you want to select it?",
+        "osNoImageDl": "SD card image with NextZXOS not found:\n{0}\n\nIt is needed to start .bas and .tap files.\n\nYes: download it now with ZXOS.sh, included with CSpect. CSpect opens in full screen and asks whether to download the image (answer Yes, use Alt+Tab if you cannot see the question); when the NextZXOS menu appears, close it with Alt+F4 and the game starts.\nNo: select an image you already have.\nCancel: do nothing.",
+        "osDlTitle": "Downloading NextZXOS",
+        "osDlWait": "ZXOS.sh is preparing the SD card image with NextZXOS (zxnext.sd).\nCSpect first asks whether to download the image: answer Yes. If you cannot see the question, press Alt+Tab.\nCSpect may stay black for a while: please wait.",
+        "osDlReady": "Image downloaded.\nWhen the NextZXOS menu appears, close CSpect with Alt+F4: the game will start.",
+        "osDlFail": "The SD card image was not downloaded:\n{0}",
+        "osDlTime": "Elapsed time: {0} s",
+        "osPick": "Select the SD card image with NextZXOS",
+        "osFilter": "SD card images",
+        "osNoTool": "hdfmonkey not found:\n{0}\n\nIt is included with CSpect (hdfmonkey folder).",
+        "osErr": "Cannot prepare NextZXOS:\n{0}",
+        "osBadImage": "NextZXOS was not found in the SD card image:\n{0}",
         "emuNotFound": "CSpect.exe not found in:\n{0}\n\nDo you want to select the CSpect folder?",
         "emuPick": "Select the folder containing CSpect.exe",
         "emuNotHere": "CSpect.exe is not in this folder.",
@@ -173,7 +192,7 @@ STRINGS = {
         "unplayable": "(non avviabile)",
         "fileLine": "File: {0}\nParametri: {1}",
         "fileChoose": "File: da scegliere al primo avvio ({0} eseguibili)\nParametri: {1}",
-        "noFile": "Nessun file .nex/.snx/.sna - impostalo in games.ini",
+        "noFile": "Nessun file .nex/.snx/.sna/.bas/.tap - impostalo in games.ini",
         "status": "{0} di {1} giochi   -   Invio/doppio clic: gioca   Ctrl+1..5: voto   F5: ricarica   Esc: esci",
         "launched": "Avviato: {0}",
         "launchErr": "Errore nell'avvio:\n{0}",
@@ -183,7 +202,21 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Annulla",
         "saveErr": "Impossibile salvare in games.ini:\n{0}",
-        "noExeMsg": "Nessun file .nex / .snx / .sna trovato in:\n{0}\n\nIndica il file da lanciare in games.ini (chiave file=).",
+        "noExeMsg": "Nessun file .nex / .snx / .sna / .bas / .tap trovato in:\n{0}\n\nIndica il file da lanciare in games.ini (chiave file=).",
+        "osTag": "(con NextZXOS)",
+        "osPrep": "Preparazione di NextZXOS per {0}...",
+        "osNoImage": "Immagine SD con NextZXOS non trovata:\n{0}\n\nServe per avviare i file .bas e .tap (di solito zxnext.sd nella cartella di CSpect, creata da ZXOS.sh).\n\nVuoi indicarla?",
+        "osNoImageDl": "Immagine SD con NextZXOS non trovata:\n{0}\n\nServe per avviare i file .bas e .tap.\n\nSì: scaricala adesso con ZXOS.sh, incluso in CSpect. CSpect si apre a schermo intero e chiede se scaricare l'immagine (rispondi Sì, con Alt+Tab se non vedi la domanda); quando compare il menu di NextZXOS chiudilo con Alt+F4 e il gioco parte.\nNo: indica un'immagine che hai già.\nAnnulla: non fare nulla.",
+        "osDlTitle": "Download di NextZXOS",
+        "osDlWait": "ZXOS.sh sta preparando l'immagine SD con NextZXOS (zxnext.sd).\nCSpect chiede prima se scaricare l'immagine: rispondi Sì. Se non vedi la domanda, premi Alt+Tab.\nCSpect può restare nero per un po': attendi.",
+        "osDlReady": "Immagine scaricata.\nQuando compare il menu di NextZXOS chiudi CSpect con Alt+F4: il gioco partirà.",
+        "osDlFail": "L'immagine SD non è stata scaricata:\n{0}",
+        "osDlTime": "Tempo trascorso: {0} s",
+        "osPick": "Seleziona l'immagine SD con NextZXOS",
+        "osFilter": "Immagini SD",
+        "osNoTool": "hdfmonkey non trovato:\n{0}\n\nÈ incluso in CSpect (cartella hdfmonkey).",
+        "osErr": "Impossibile preparare NextZXOS:\n{0}",
+        "osBadImage": "NextZXOS non è stato trovato nell'immagine SD:\n{0}",
         "emuNotFound": "CSpect.exe non trovato in:\n{0}\n\nVuoi indicare la cartella di CSpect?",
         "emuPick": "Seleziona la cartella che contiene CSpect.exe",
         "emuNotHere": "In questa cartella non c'è CSpect.exe.",
@@ -232,7 +265,7 @@ STRINGS = {
         "unplayable": "(no ejecutable)",
         "fileLine": "Archivo: {0}\nParámetros: {1}",
         "fileChoose": "Archivo: a elegir en el primer inicio ({0} ejecutables)\nParámetros: {1}",
-        "noFile": "Ningún archivo .nex/.snx/.sna - indícalo en games.ini",
+        "noFile": "Ningún archivo .nex/.snx/.sna/.bas/.tap - indícalo en games.ini",
         "status": "{0} de {1} juegos   -   Intro/doble clic: jugar   Ctrl+1..5: nota   F5: recargar   Esc: salir",
         "launched": "Iniciado: {0}",
         "launchErr": "Error al iniciar:\n{0}",
@@ -242,7 +275,21 @@ STRINGS = {
         "ok": "Aceptar",
         "cancel": "Cancelar",
         "saveErr": "No se puede guardar en games.ini:\n{0}",
-        "noExeMsg": "No se encontró ningún archivo .nex / .snx / .sna en:\n{0}\n\nIndica el archivo a ejecutar en games.ini (clave file=).",
+        "noExeMsg": "No se encontró ningún archivo .nex / .snx / .sna / .bas / .tap en:\n{0}\n\nIndica el archivo a ejecutar en games.ini (clave file=).",
+        "osTag": "(con NextZXOS)",
+        "osPrep": "Preparando NextZXOS para {0}...",
+        "osNoImage": "No se encontró la imagen SD con NextZXOS:\n{0}\n\nEs necesaria para iniciar archivos .bas y .tap (normalmente zxnext.sd en la carpeta de CSpect, creada por ZXOS.sh).\n\n¿Quieres indicarla?",
+        "osNoImageDl": "No se encontró la imagen SD con NextZXOS:\n{0}\n\nEs necesaria para iniciar archivos .bas y .tap.\n\nSí: descárgala ahora con ZXOS.sh, incluido con CSpect. CSpect se abre en pantalla completa y pregunta si quieres descargar la imagen (responde Sí, con Alt+Tab si no ves la pregunta); cuando aparezca el menú de NextZXOS, ciérralo con Alt+F4 y el juego se inicia.\nNo: indica una imagen que ya tengas.\nCancelar: no hacer nada.",
+        "osDlTitle": "Descarga de NextZXOS",
+        "osDlWait": "ZXOS.sh está preparando la imagen SD con NextZXOS (zxnext.sd).\nCSpect pregunta primero si quieres descargar la imagen: responde Sí. Si no ves la pregunta, pulsa Alt+Tab.\nCSpect puede quedarse en negro un rato: espera.",
+        "osDlReady": "Imagen descargada.\nCuando aparezca el menú de NextZXOS, cierra CSpect con Alt+F4: el juego se iniciará.",
+        "osDlFail": "No se descargó la imagen SD:\n{0}",
+        "osDlTime": "Tiempo transcurrido: {0} s",
+        "osPick": "Selecciona la imagen SD con NextZXOS",
+        "osFilter": "Imágenes SD",
+        "osNoTool": "No se encontró hdfmonkey:\n{0}\n\nSe incluye con CSpect (carpeta hdfmonkey).",
+        "osErr": "No se puede preparar NextZXOS:\n{0}",
+        "osBadImage": "No se encontró NextZXOS en la imagen SD:\n{0}",
         "emuNotFound": "No se encontró CSpect.exe en:\n{0}\n\n¿Quieres indicar la carpeta de CSpect?",
         "emuPick": "Selecciona la carpeta que contiene CSpect.exe",
         "emuNotHere": "CSpect.exe no está en esta carpeta.",
@@ -291,7 +338,7 @@ STRINGS = {
         "unplayable": "(non lançable)",
         "fileLine": "Fichier : {0}\nParamètres : {1}",
         "fileChoose": "Fichier : à choisir au premier lancement ({0} exécutables)\nParamètres : {1}",
-        "noFile": "Aucun fichier .nex/.snx/.sna - indiquez-le dans games.ini",
+        "noFile": "Aucun fichier .nex/.snx/.sna/.bas/.tap - indiquez-le dans games.ini",
         "status": "{0} sur {1} jeux   -   Entrée/double-clic : jouer   Ctrl+1..5 : note   F5 : recharger   Échap : quitter",
         "launched": "Lancé : {0}",
         "launchErr": "Erreur au lancement :\n{0}",
@@ -301,7 +348,21 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Annuler",
         "saveErr": "Impossible d'enregistrer dans games.ini :\n{0}",
-        "noExeMsg": "Aucun fichier .nex / .snx / .sna trouvé dans :\n{0}\n\nIndiquez le fichier à lancer dans games.ini (clé file=).",
+        "noExeMsg": "Aucun fichier .nex / .snx / .sna / .bas / .tap trouvé dans :\n{0}\n\nIndiquez le fichier à lancer dans games.ini (clé file=).",
+        "osTag": "(avec NextZXOS)",
+        "osPrep": "Préparation de NextZXOS pour {0}...",
+        "osNoImage": "Image de carte SD avec NextZXOS introuvable :\n{0}\n\nElle est nécessaire pour lancer les fichiers .bas et .tap (en général zxnext.sd dans le dossier de CSpect, créée par ZXOS.sh).\n\nVoulez-vous l'indiquer ?",
+        "osNoImageDl": "Image de carte SD avec NextZXOS introuvable :\n{0}\n\nElle est nécessaire pour lancer les fichiers .bas et .tap.\n\nOui : la télécharger maintenant avec ZXOS.sh, fourni avec CSpect. CSpect s'ouvre en plein écran et demande s'il faut télécharger l'image (répondez Oui, avec Alt+Tab si vous ne voyez pas la question) ; quand le menu de NextZXOS apparaît, fermez-le avec Alt+F4 et le jeu démarre.\nNon : indiquer une image que vous avez déjà.\nAnnuler : ne rien faire.",
+        "osDlTitle": "Téléchargement de NextZXOS",
+        "osDlWait": "ZXOS.sh prépare l'image de carte SD avec NextZXOS (zxnext.sd).\nCSpect demande d'abord s'il faut télécharger l'image : répondez Oui. Si vous ne voyez pas la question, appuyez sur Alt+Tab.\nCSpect peut rester noir un moment : patientez.",
+        "osDlReady": "Image téléchargée.\nQuand le menu de NextZXOS apparaît, fermez CSpect avec Alt+F4 : le jeu démarrera.",
+        "osDlFail": "L'image de carte SD n'a pas été téléchargée :\n{0}",
+        "osDlTime": "Temps écoulé : {0} s",
+        "osPick": "Sélectionnez l'image de carte SD avec NextZXOS",
+        "osFilter": "Images de carte SD",
+        "osNoTool": "hdfmonkey introuvable :\n{0}\n\nIl est fourni avec CSpect (dossier hdfmonkey).",
+        "osErr": "Impossible de préparer NextZXOS :\n{0}",
+        "osBadImage": "NextZXOS est introuvable dans l'image de carte SD :\n{0}",
         "emuNotFound": "CSpect.exe introuvable dans :\n{0}\n\nVoulez-vous indiquer le dossier de CSpect ?",
         "emuPick": "Sélectionnez le dossier contenant CSpect.exe",
         "emuNotHere": "CSpect.exe n'est pas dans ce dossier.",
@@ -350,7 +411,7 @@ STRINGS = {
         "unplayable": "(nicht startbar)",
         "fileLine": "Datei: {0}\nParameter: {1}",
         "fileChoose": "Datei: wird beim ersten Start gewählt ({0} Programme)\nParameter: {1}",
-        "noFile": "Keine .nex/.snx/.sna-Datei - in games.ini festlegen",
+        "noFile": "Keine .nex/.snx/.sna/.bas/.tap-Datei - in games.ini festlegen",
         "status": "{0} von {1} Spielen   -   Enter/Doppelklick: spielen   Strg+1..5: Wertung   F5: neu laden   Esc: beenden",
         "launched": "Gestartet: {0}",
         "launchErr": "Fehler beim Start:\n{0}",
@@ -360,7 +421,21 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Abbrechen",
         "saveErr": "Speichern in games.ini nicht möglich:\n{0}",
-        "noExeMsg": "Keine .nex / .snx / .sna-Datei gefunden in:\n{0}\n\nLege die zu startende Datei in games.ini fest (Schlüssel file=).",
+        "noExeMsg": "Keine .nex / .snx / .sna / .bas / .tap-Datei gefunden in:\n{0}\n\nLege die zu startende Datei in games.ini fest (Schlüssel file=).",
+        "osTag": "(mit NextZXOS)",
+        "osPrep": "NextZXOS wird für {0} vorbereitet...",
+        "osNoImage": "SD-Karten-Image mit NextZXOS nicht gefunden:\n{0}\n\nEs wird zum Starten von .bas- und .tap-Dateien benötigt (meist zxnext.sd im CSpect-Ordner, erstellt von ZXOS.sh).\n\nMöchtest du es auswählen?",
+        "osNoImageDl": "SD-Karten-Image mit NextZXOS nicht gefunden:\n{0}\n\nEs wird zum Starten von .bas- und .tap-Dateien benötigt.\n\nJa: jetzt mit ZXOS.sh herunterladen (bei CSpect dabei). CSpect öffnet sich im Vollbild und fragt, ob das Image heruntergeladen werden soll (mit Ja antworten, Alt+Tab falls die Frage nicht zu sehen ist); wenn das NextZXOS-Menü erscheint, mit Alt+F4 schließen, dann startet das Spiel.\nNein: ein vorhandenes Image auswählen.\nAbbrechen: nichts tun.",
+        "osDlTitle": "NextZXOS wird heruntergeladen",
+        "osDlWait": "ZXOS.sh bereitet das SD-Karten-Image mit NextZXOS vor (zxnext.sd).\nCSpect fragt zuerst, ob das Image heruntergeladen werden soll: mit Ja antworten. Wenn die Frage nicht zu sehen ist, Alt+Tab drücken.\nCSpect kann eine Weile schwarz bleiben: bitte warten.",
+        "osDlReady": "Image heruntergeladen.\nWenn das NextZXOS-Menü erscheint, CSpect mit Alt+F4 schließen: das Spiel startet dann.",
+        "osDlFail": "Das SD-Karten-Image wurde nicht heruntergeladen:\n{0}",
+        "osDlTime": "Vergangene Zeit: {0} s",
+        "osPick": "Wähle das SD-Karten-Image mit NextZXOS",
+        "osFilter": "SD-Karten-Images",
+        "osNoTool": "hdfmonkey nicht gefunden:\n{0}\n\nEs ist bei CSpect dabei (Ordner hdfmonkey).",
+        "osErr": "NextZXOS kann nicht vorbereitet werden:\n{0}",
+        "osBadImage": "NextZXOS wurde im SD-Karten-Image nicht gefunden:\n{0}",
         "emuNotFound": "CSpect.exe nicht gefunden in:\n{0}\n\nMöchtest du den CSpect-Ordner auswählen?",
         "emuPick": "Wähle den Ordner mit CSpect.exe",
         "emuNotHere": "CSpect.exe befindet sich nicht in diesem Ordner.",
@@ -381,6 +456,7 @@ class Settings:
     games_dir = os.path.join(ROOT, 'GAMES')
     emulator = os.path.join(ROOT, 'CSpect', 'CSpect.exe')
     global_args = DEFAULT_ARGS
+    sd_image_cfg = ''       # nextzxos= (empty = zxnext.sd in the CSpect folder)
     lang = 'en'
     sort_mode = 'name'
     list_width = 368
@@ -482,6 +558,8 @@ def new_ini_file(lang, games, cspect, gargs):
         ';  args=           CSpect parameters for all games',
         ';  sort=           list order: name or rating',
         ';  listwidth=      list width in pixels (also by dragging the divider)',
+        ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games',
+        ';                  (default: zxnext.sd in the CSpect folder)',
         ';',
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),',
         ';  title= image= args= optional',
@@ -587,7 +665,8 @@ def load_settings():
     S.global_args = s.get('args') or DEFAULT_ARGS
     S.games_dir = resolve_dir(s.get('games'), 'GAMES')
     S.emulator = resolve_emulator(s.get('cspect'))
-    l = (s.get('lang') or '').strip().lower()
+    S.sd_image_cfg = s.get('nextzxos') or ''
+    l =(s.get('lang') or '').strip().lower()
     S.lang = l if l in STRINGS else 'en'
     S.sort_mode = 'rating' if (s.get('sort') or '').strip().lower() in ('voto', 'rating') else 'name'
     m = re.match(r'^\s*(\d+)\s*$', s.get('listwidth') or '')
@@ -604,15 +683,18 @@ class Game:
 
 
 def get_candidates(folder):
-    """Executables in the game folder and its subfolders (relative paths, main folder first)."""
-    res = []
+    """Executables in the game folder and its subfolders (relative paths, main folder first);
+    .bas/.tap files (started with NextZXOS) only when there is no .nex/.snx/.sna"""
+    found = []
     for dirpath, dirnames, files in os.walk(folder):
         for f in files:
-            if os.path.splitext(f)[1].lower() in GAME_EXTS:
-                rel = os.path.relpath(os.path.join(dirpath, f), folder).replace(os.sep, '/')
-                res.append(rel)
-    res.sort(key=lambda r: (r.count('/'), r.lower()))
-    return res
+            found.append(os.path.relpath(os.path.join(dirpath, f), folder).replace(os.sep, '/'))
+    for exts in (GAME_EXTS, OS_EXTS):
+        res = [r for r in found if os.path.splitext(r)[1].lower() in exts]
+        if res:
+            res.sort(key=lambda r: (r.count('/'), r.lower()))
+            return res
+    return []
 
 
 def list_images(folder):
@@ -773,6 +855,215 @@ def split_args(text):
         return shlex.split(text, posix=not IS_WIN)
     except ValueError:
         return text.split()
+
+
+# ============================================================
+#  NextZXOS: starting .bas and .tap files
+#  CSpect cannot open them directly: a small SD card image is created on the fly
+#  with the NextZXOS files (taken from the user's image, e.g. zxnext.sd), the game
+#  in c:/GAME and an autoexec.bas that loads it at power on
+# ============================================================
+class FatImage:
+    """Read-only access to a FAT32 SD card image, with or without a partition table."""
+
+    def __init__(self, path):
+        self.f = open(path, 'rb')
+        base = 0
+        if self._read(82, 5) != b'FAT32':
+            base = int.from_bytes(self._read(454, 4), 'little') * 512
+        b = self._read(base, 512)
+        if b[82:87] != b'FAT32':
+            raise ValueError('FAT32 file system not found')
+        bps = int.from_bytes(b[11:13], 'little')
+        self.cluster_size = bps * b[13]
+        self.fat = base + int.from_bytes(b[14:16], 'little') * bps
+        self.data = self.fat + b[16] * int.from_bytes(b[36:40], 'little') * bps
+        self.root = int.from_bytes(b[44:48], 'little')
+
+    def close(self):
+        self.f.close()
+
+    def _read(self, pos, n):
+        self.f.seek(pos)
+        b = self.f.read(n)
+        if len(b) < n:
+            raise ValueError('unexpected end of the image')
+        return b
+
+    def _chain(self, c):
+        n = 0
+        while 2 <= c < 0x0FFFFFF8 and n < 4000000:
+            yield c
+            n += 1
+            c = int.from_bytes(self._read(self.fat + c * 4, 4), 'little') & 0x0FFFFFFF
+
+    def _cluster(self, c, n=None):
+        return self._read(self.data + (c - 2) * self.cluster_size, n or self.cluster_size)
+
+    def read_dir(self, cluster):
+        """(name, is_dir, first cluster, size) of the entries of a directory."""
+        res, lfn = [], ''
+        for c in self._chain(cluster):
+            raw = self._cluster(c)
+            for i in range(0, len(raw), 32):
+                e = raw[i:i + 32]
+                if e[0] == 0:
+                    return res
+                if e[0] == 0xE5:
+                    lfn = ''
+                    continue
+                if e[11] == 0x0F:
+                    lfn = (e[1:11] + e[14:26] + e[28:32]).decode('utf-16-le', 'replace').split('\x00')[0] + lfn
+                    continue
+                if e[11] & 0x08:
+                    lfn = ''
+                    continue
+                name, lfn = lfn, ''
+                if not name:
+                    name = e[0:8].decode('latin-1').rstrip()
+                    ext = e[8:11].decode('latin-1').rstrip()
+                    if ext:
+                        name += '.' + ext
+                if name in ('.', '..'):
+                    continue
+                cl = int.from_bytes(e[20:22], 'little') << 16 | int.from_bytes(e[26:28], 'little')
+                res.append((name, bool(e[11] & 0x10), cl, int.from_bytes(e[28:32], 'little')))
+        return res
+
+    def copy_dir(self, cluster, dest):
+        os.makedirs(dest, exist_ok=True)
+        for name, is_dir, cl, size in self.read_dir(cluster):
+            p = os.path.join(dest, name)
+            if is_dir:
+                self.copy_dir(cl, p)
+                continue
+            with open(p, 'wb') as o:
+                left = size
+                if left > 0:
+                    for c in self._chain(cl):
+                        n = min(left, self.cluster_size)
+                        o.write(self._cluster(c, n))
+                        left -= n
+                        if left <= 0:
+                            break
+
+
+def resolve_sd_image(value):
+    """SD card image with NextZXOS from nextzxos= (empty = zxnext.sd in the CSpect folder)."""
+    p = norm(value)
+    if not p:
+        return find_case_insensitive(os.path.dirname(S.emulator), 'zxnext.sd')
+    if not os.path.isabs(p):
+        p = os.path.join(ROOT, p)
+    return os.path.normpath(p)
+
+
+def run_hdfmonkey(*args):
+    """Runs hdfmonkey (included with CSpect); raises an error if it fails."""
+    hdir = os.path.join(os.path.dirname(S.emulator), 'hdfmonkey')
+    if IS_WIN:
+        exe = os.path.join(hdir, 'windows-64', 'hdfmonkey.exe')
+    elif sys.platform == 'darwin':
+        exe = os.path.join(hdir, 'macos-mn' if os.uname().machine == 'arm64' else 'macos-intel', 'hdfmonkey')
+    else:
+        exe = os.path.join(hdir, 'linux-musl', 'hdfmonkey')
+    if not os.path.isfile(exe):
+        raise RuntimeError(T('osNoTool', exe))
+    if not IS_WIN and not os.access(exe, os.X_OK):
+        os.chmod(exe, os.stat(exe).st_mode | 0o111)
+    r = subprocess.run([exe] + list(args), capture_output=True, text=True, errors='replace')
+    if r.returncode != 0:
+        raise RuntimeError('hdfmonkey %s: %s' % (args[0], (r.stdout + r.stderr).strip()))
+
+
+def update_os_files(sd_image):
+    """NextZXOS system files copied from the SD card image (once, until the image changes)."""
+    d = os.path.join(OS_WORK, 'nextzxos')
+    stamp_file = os.path.join(OS_WORK, 'nextzxos.txt')
+    st = os.stat(sd_image)
+    stamp = '%s|%d|%d' % (os.path.abspath(sd_image), st.st_size, int(st.st_mtime))
+    try:
+        with open(stamp_file, encoding='utf-8') as f:
+            if os.path.isdir(d) and f.read() == stamp:
+                return d
+    except OSError:
+        pass
+    os.makedirs(OS_WORK, exist_ok=True)
+    shutil.rmtree(d, ignore_errors=True)
+    try:
+        fat = FatImage(sd_image)
+        try:
+            root = fat.read_dir(fat.root)
+            for name in OS_DIRS:
+                e = next((x for x in root if x[1] and x[0].lower() == name.lower()), None)
+                if not e:
+                    raise ValueError('/' + name)
+                fat.copy_dir(e[2], os.path.join(d, name))
+        finally:
+            fat.close()
+    except (OSError, ValueError) as ex:
+        shutil.rmtree(d, ignore_errors=True)
+        raise RuntimeError(T('osBadImage', sd_image) + '\n' + str(ex))
+    # no user or welcome autoexec: the game's one is added
+    sysdir = os.path.join(d, 'NEXTZXOS')
+    for f in os.listdir(sysdir):
+        if f.lower().startswith('autoexec.'):
+            os.remove(os.path.join(sysdir, f))
+    with open(stamp_file, 'w', encoding='utf-8') as f:
+        f.write(stamp)
+    return d
+
+
+# autoexec.bas (+3DOS format): goes to c:/GAME and loads the game
+#   .bas:  .cd /game  -  LOAD "name.bas"
+#   .tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
+def make_autoexec(file_name, is_tap):
+    load = b'\xef'                          # LOAD token
+    name = file_name.encode('latin-1', 'replace')
+    lines = [b'.cd /game']
+    if is_tap:
+        lines += [b'.run ' + name, load + b'"t:":' + load + b'""']
+    else:
+        lines += [load + b'"' + name + b'"']
+    prog = b''
+    for i, body in enumerate(lines):
+        prog += (10 * (i + 1)).to_bytes(2, 'big') + (len(body) + 1).to_bytes(2, 'little') + body + b'\r'
+    h = bytearray(128)
+    h[0:11] = b'PLUS3DOS\x1a\x01\x00'
+    h[11:15] = (128 + len(prog)).to_bytes(4, 'little')
+    h[15] = 0                                                   # BASIC program
+    h[16:18] = len(prog).to_bytes(2, 'little')
+    h[18:20] = (10).to_bytes(2, 'little')                       # starts at line 10
+    h[20:22] = len(prog).to_bytes(2, 'little')
+    h[127] = sum(h[:127]) & 0xFF
+    return bytes(h) + prog
+
+
+def new_os_image(g, sd_image):
+    """Creates the SD card image of the game and returns its path."""
+    sysdir = update_os_files(sd_image)
+    is_tap = g.file.lower().endswith('.tap')
+    exe_dir = os.path.dirname(g.file)
+    name = os.path.basename(g.file)
+    # some .tap files load other files from their folder: the whole folder is copied
+    size = sum(os.path.getsize(os.path.join(dp, f)) for dp, dn, fs in os.walk(exe_dir) for f in fs)
+    mb = max(64, -(-size * 5 // 4 // (1024 * 1024)) + 32)
+    img = os.path.join(OS_WORK, re.sub(r'[^\w\-]', '_', g.section) + '.img')
+    if os.path.exists(img):
+        os.remove(img)
+    run_hdfmonkey('create', img, '%dM' % mb)
+    run_hdfmonkey('putdir', img, sysdir, '/')
+    run_hdfmonkey('mkdir', img, '/GAME')
+    run_hdfmonkey('putdir', img, exe_dir, '/GAME')
+    # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
+    if is_tap and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
+        run_hdfmonkey('put', img, g.file, '/GAME/GAME.TAP')
+        name = 'GAME.TAP'
+    ae = os.path.join(OS_WORK, 'AUTOEXEC.BAS')
+    with open(ae, 'wb') as f:
+        f.write(make_autoexec(name, is_tap))
+    run_hdfmonkey('put', img, ae, '/NEXTZXOS/AUTOEXEC.BAS')
+    return img
 
 
 # ============================================================
@@ -1098,7 +1389,10 @@ class Launcher:
         self.lbl_title.config(text=g.title)
         if g.file:
             a = g.args + ('  ' + T('customTag') if g.args_cfg else '')
-            self.lbl_file.config(text=T('fileLine', os.path.relpath(g.file, g.folder).replace(os.sep, '/'), a))
+            rel = os.path.relpath(g.file, g.folder).replace(os.sep, '/')
+            if os.path.splitext(g.file)[1].lower() in OS_EXTS:
+                rel += '  ' + T('osTag')
+            self.lbl_file.config(text=T('fileLine', rel, a))
             self.btn_play.config(state='normal')
         elif len(g.candidates) > 1:
             self.lbl_file.config(text=T('fileChoose', len(g.candidates), g.args))
@@ -1193,17 +1487,123 @@ class Launcher:
                 messagebox.showerror(APP_NAME, T('monoMissing'), parent=self.root)
                 return 'break'
             cmd.append(mono)
-        # working folder = folder of the executable: -mmc=./ points there,
-        # save files and screenshots end up next to the game
-        exe_dir = os.path.dirname(g.file)
-        cmd += [S.emulator] + split_args(g.args) + ['./' + os.path.basename(g.file)]
+        if os.path.splitext(g.file)[1].lower() in OS_EXTS:
+            # .bas / .tap: CSpect starts with the NextZXOS image created on the fly (-mmc= not needed)
+            sd = self.find_sd_image()
+            if not sd:
+                return 'break'
+            self.status.config(text=T('osPrep', g.title))
+            self.root.config(cursor='watch')
+            self.root.update()
+            try:
+                img = new_os_image(g, sd)
+            except (OSError, RuntimeError) as ex:
+                self.status.config(text='')
+                messagebox.showerror(APP_NAME, T('osErr', ex), parent=self.root)
+                return 'break'
+            finally:
+                self.root.config(cursor='')
+            cmd += [S.emulator] + [a for a in split_args(g.args) if not a.lower().startswith('-mmc=')] + [img]
+            work_dir = OS_WORK
+        else:
+            # working folder = folder of the executable: -mmc=./ points there,
+            # save files and screenshots end up next to the game
+            work_dir = os.path.dirname(g.file)
+            cmd += [S.emulator] + split_args(g.args) + ['./' + os.path.basename(g.file)]
         try:
-            subprocess.Popen(cmd, cwd=exe_dir, start_new_session=not IS_WIN,
+            subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.status.config(text=T('launched', g.title))
         except OSError as ex:
             messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
         return 'break'
+
+    def wait_zxos_download(self, proc, img):
+        """Waiting window while ZXOS.sh downloads the image (CSpect stays black meanwhile).
+        Closes by itself when CSpect is closed; True if the image is there."""
+        dlg = tk.Toplevel(self.root)
+        dlg.title(T('osDlTitle'))
+        dlg.configure(bg=C_BACK)
+        dlg.resizable(False, False)
+        dlg.transient(self.root)        # not topmost: it would cover CSpect's download question
+        lbl = tk.Label(dlg, text=T('osDlWait'), bg=C_BACK, fg=C_TEXT, justify='left', anchor='w', wraplength=460)
+        lbl.pack(fill='x', padx=12, pady=(12, 8))
+        bar = ttk.Progressbar(dlg, mode='indeterminate', length=460)
+        bar.pack(padx=12)
+        bar.start(15)
+        row = tk.Frame(dlg, bg=C_BACK)
+        row.pack(fill='x', padx=12, pady=12)
+        lbl_time = tk.Label(row, bg=C_BACK, fg=C_DIM)
+        lbl_time.pack(side='left')
+        result = {'ok': False, 'ready': False}
+        start = datetime.datetime.now()
+
+        def cancel():
+            dlg.destroy()
+
+        tk.Button(row, text=T('cancel'), command=cancel, bg=C_PANEL, fg=C_TEXT, relief='flat',
+                  width=10).pack(side='right')
+        dlg.bind('<Escape>', lambda e: cancel())
+        dlg.protocol('WM_DELETE_WINDOW', cancel)
+
+        def tick():
+            if not dlg.winfo_exists():
+                return
+            lbl_time.config(text=T('osDlTime', int((datetime.datetime.now() - start).total_seconds())))
+            if not result['ready'] and os.path.isfile(img):
+                result['ready'] = True
+                lbl.config(text=T('osDlReady'))
+                bar.stop()
+                bar.config(mode='determinate', value=100)
+            if proc.poll() is not None:
+                result['ok'] = True
+                dlg.destroy()
+                return
+            dlg.after(500, tick)
+
+        tick()
+        dlg.grab_set()
+        self.root.wait_window(dlg)
+        if not result['ok']:
+            return False        # Cancel: CSpect stays open, nothing is started
+        if os.path.isfile(img):
+            return True
+        messagebox.showwarning(APP_NAME, T('osDlFail', img), parent=self.root)
+        return False
+
+    def find_sd_image(self):
+        """If the NextZXOS SD card image is missing, lets the user pick it and saves it in games.ini."""
+        img = resolve_sd_image(S.sd_image_cfg)
+        if os.path.isfile(img):
+            return img
+        # ZXOS.sh of CSpect downloads zxnext.sd into the CSpect folder when it is missing
+        cs_dir = os.path.dirname(S.emulator)
+        zxos = find_case_insensitive(cs_dir, 'ZXOS.bat' if IS_WIN else 'ZXOS.sh')
+        if not S.sd_image_cfg and os.path.isfile(zxos):
+            r = messagebox.askyesnocancel(APP_NAME, T('osNoImageDl', img), icon='warning', parent=self.root)
+            if r:
+                cmd = [os.environ.get('COMSPEC', 'cmd.exe'), '/c', zxos] if IS_WIN else ['bash', zxos]
+                try:
+                    proc = subprocess.Popen(cmd, cwd=cs_dir, start_new_session=not IS_WIN,
+                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                except OSError as ex:
+                    messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
+                    return None
+                return img if self.wait_zxos_download(proc, img) else None
+            if r is None:
+                return None
+        elif not messagebox.askyesno(APP_NAME, T('osNoImage', img), icon='warning', parent=self.root):
+            return None
+        p = filedialog.askopenfilename(title=T('osPick'), initialdir=os.path.dirname(S.emulator), parent=self.root,
+                                       filetypes=[(T('osFilter'), '*.sd *.img *.mmc *.hdf *.vhd'), ('*', '*')])
+        if not p:
+            return None
+        S.sd_image_cfg = to_ini_path(p)
+        try:
+            set_ini_value('_default', 'nextzxos', S.sd_image_cfg)
+        except OSError:
+            pass
+        return p
 
     def find_emulator(self):
         if os.path.isfile(S.emulator):

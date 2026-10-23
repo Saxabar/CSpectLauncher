@@ -17,6 +17,7 @@ The interface is available in **English, Italian, Spanish, French and German**.
 - 1–5 star ratings
 - Cover pictures, taken automatically from CSpect screenshots (F5)
 - Executables found in the game folder and its subfolders (`.nex`, `.snx`, `.sna`)
+- NextBASIC (`.bas`) and tape (`.tap`) games started automatically through NextZXOS
 - Per-game launch parameters, custom titles and hidden games
 - Delete a game's save files (moved to the Recycle Bin)
 - Settings for language, folders, window size (1x–4x) and full screen
@@ -74,9 +75,31 @@ Folders inside the launcher folder are saved as relative paths (`.\GAMES`), so y
 Double-click the game, press **Enter**, or click **PLAY**.
 CSpect starts in the folder of the game's executable, so save files and screenshots are stored next to the game.
 
-Supported files are `.nex`, `.snx` and `.sna`, also inside subfolders. Games that only contain `.tap` or NextBASIC (`.bas`) files cannot be started directly and are marked *(not launchable)*.
+Supported files are `.nex`, `.snx` and `.sna`, also inside subfolders. Games that only contain NextBASIC (`.bas`) or tape (`.tap`) files are started through NextZXOS (see below). Games with none of these files are marked *(not launchable)*.
 
 If a folder contains more than one executable, the launcher asks which one to use the first time and remembers the choice.
+
+### .bas and .tap games (NextZXOS)
+
+CSpect cannot open `.bas` and `.tap` files directly: they need NextZXOS, the operating system of the Next. When you start one of these games, the launcher:
+
+1. copies the NextZXOS system files once from your SD card image (by default `zxnext.sd` in the CSpect folder, the image downloaded by CSpect's `ZXOS.bat`);
+2. creates a small SD card image (64 MB or more) in your temporary folder, with NextZXOS, the game's folder and an `autoexec.bas` that loads the game;
+3. starts CSpect with that image: NextZXOS boots and the game starts by itself.
+
+The image is created with **hdfmonkey**, which is included with CSpect (`hdfmonkey` folder). Your `zxnext.sd` is only read, never changed.
+
+CSpect does not include `zxnext.sd`: it is downloaded the first time you run CSpect's `ZXOS.bat`. If it is missing, the launcher offers to:
+
+- **Yes:** run `ZXOS.bat` now. CSpect opens in full screen and asks *"ZX Spectrum next SD Image not found, do you wish to download it?"*: answer **Yes** (if the question is hidden behind the full screen, press **Alt+Tab**). CSpect then downloads the image (the screen stays black meanwhile), while the launcher shows a waiting window with the elapsed time. When the NextZXOS menu appears, close CSpect with **Alt+F4**: the game then starts by itself;
+- **No:** select an SD card image you already have (saved as `nextzxos=` in `games.ini`);
+- **Cancel:** do nothing.
+
+Notes:
+
+- `.tap` files are loaded in 128K mode; a few games that need 48K mode may not work.
+- The image is created again at every launch, so anything the game saves (high scores, saved games) is lost when CSpect is closed.
+- The file shown in the details ends with *(with NextZXOS)*. The CSpect option `-mmc=` is not used for these games.
 
 ### Rating
 
@@ -98,7 +121,7 @@ Picture priority:
 
 | Item | What it does |
 |---|---|
-| Choose executable... | pick which `.nex` / `.snx` / `.sna` file to start |
+| Choose executable... | pick which `.nex` / `.snx` / `.sna` (or `.bas` / `.tap`) file to start |
 | Launch parameters... | custom CSpect parameters for this game only (empty = general ones) |
 | Rename title... | change the name shown in the list (empty = folder name) |
 | Hide game / Show game again | hide or show the game in the list |
@@ -138,6 +161,7 @@ cspect=.\CSpect
 args=-w2 -vsync -zxnext -mmc=.\
 sort=name
 listwidth=368
+nextzxos=.\CSpect\zxnext.sd
 
 ; one section per game folder (all keys are optional)
 [Folder name]
@@ -157,6 +181,7 @@ hidden=1
 | `args` | in `[_default]`: CSpect parameters for all games; in a game section: custom parameters for that game |
 | `sort` | list order: `name` or `rating` |
 | `listwidth` | list width in pixels |
+| `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` games (empty = `zxnext.sd` in the CSpect folder) |
 | `file` | executable to start (may include a subfolder) |
 | `rating` | rating 1..5 |
 | `title` | name shown in the list |

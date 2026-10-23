@@ -3,6 +3,14 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## Unreleased
+
+- NextBASIC (.bas) and tape (.tap) games start automatically: the launcher creates a small
+  NextZXOS SD card image with the game and an autoexec.bas (needs zxnext.sd and hdfmonkey, both from CSpect)
+- If zxnext.sd is missing, the launcher offers to download it with CSpect's ZXOS.bat / ZXOS.sh,
+  shows a waiting window during the download and then starts the game
+- New games.ini key nextzxos= (SD card image with NextZXOS, default zxnext.sd in the CSpect folder)
+
 ## 1.0
 
 First release.

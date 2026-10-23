@@ -91,6 +91,7 @@ Categories=Game;Emulator;
 - Paths written by the Windows version (`.\GAMES`, `-mmc=.\`, `folder\game.nex`) are converted automatically, so the same `games.ini` works on both systems.
 - "Delete save files (.sav)" moves the files to the desktop **Trash**.
 - File names on Linux are case sensitive; the launcher still recognises extensions such as `.NEX` or `.SAV` in upper case.
+- `.bas` and `.tap` games (started through NextZXOS, see the main README) use the Linux build of hdfmonkey included with CSpect (`hdfmonkey/linux-musl/hdfmonkey`, made executable automatically if needed). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`. The SD card image is the `zxnext.sd` downloaded by CSpect's `ZXOS.sh`; if it is missing, the launcher offers to run `ZXOS.sh` (with `bash`) to download it.
 
 ## License
 
