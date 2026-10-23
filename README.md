@@ -98,7 +98,8 @@ CSpect does not include `zxnext.sd`: it is downloaded the first time you run CSp
 Notes:
 
 - `.tap` files are loaded in 128K mode; a few games that need 48K mode may not work.
-- The image is created again at every launch, so anything the game saves (high scores, saved games) is lost when CSpect is closed.
+- The image is created again at every launch, so anything the game saves (high scores, saved games) is lost when CSpect is closed. Images of previous launches are deleted automatically (except the one of a CSpect still running).
+- CSpect starts in the game's folder, so F5 screenshots are saved next to the game and used as the cover, as for the other games.
 - The file shown in the details ends with *(with NextZXOS)*. The CSpect option `-mmc=` is not used for these games.
 
 ### Rating

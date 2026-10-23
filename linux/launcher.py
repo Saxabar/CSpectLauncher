@@ -1039,6 +1039,25 @@ def make_autoexec(file_name, is_tap):
     return bytes(h) + prog
 
 
+def file_in_use(path):
+    """True if a process has the file open. On Windows an open image cannot be removed anyway;
+    on Linux it could, so the open files of the processes are checked in /proc."""
+    if IS_WIN or not os.path.isdir('/proc'):
+        return False
+    target = os.path.realpath(path)
+    for pid in os.listdir('/proc'):
+        if not pid.isdigit():
+            continue
+        fd_dir = os.path.join('/proc', pid, 'fd')
+        try:
+            for fd in os.listdir(fd_dir):
+                if os.path.realpath(os.path.join(fd_dir, fd)) == target:
+                    return True
+        except OSError:
+            continue
+    return False
+
+
 def new_os_image(g, sd_image):
     """Creates the SD card image of the game and returns its path."""
     sysdir = update_os_files(sd_image)
@@ -1049,6 +1068,14 @@ def new_os_image(g, sd_image):
     size = sum(os.path.getsize(os.path.join(dp, f)) for dp, dn, fs in os.walk(exe_dir) for f in fs)
     mb = max(64, -(-size * 5 // 4 // (1024 * 1024)) + 32)
     img = os.path.join(OS_WORK, re.sub(r'[^\w\-]', '_', g.section) + '.img')
+    # images of previous launches are removed, except those still used by a running CSpect
+    for f in os.listdir(OS_WORK):
+        p = os.path.join(OS_WORK, f)
+        if f.lower().endswith('.img') and p != img and not file_in_use(p):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
     if os.path.exists(img):
         os.remove(img)
     run_hdfmonkey('create', img, '%dM' % mb)
@@ -1504,7 +1531,7 @@ class Launcher:
             finally:
                 self.root.config(cursor='')
             cmd += [S.emulator] + [a for a in split_args(g.args) if not a.lower().startswith('-mmc=')] + [img]
-            work_dir = OS_WORK
+            work_dir = os.path.dirname(g.file)      # as for the other games: F5 screenshots end up next to the game
         else:
             # working folder = folder of the executable: -mmc=./ points there,
             # save files and screenshots end up next to the game

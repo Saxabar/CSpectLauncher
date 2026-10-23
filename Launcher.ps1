@@ -1203,6 +1203,10 @@ function New-OsImage($game) {
     $size = (Get-ChildItem -LiteralPath $exeDir -File -Recurse | Measure-Object Length -Sum).Sum
     $mb = [math]::Max(64, [math]::Ceiling($size * 1.25 / 1MB) + 32)
     $img = Join-Path $OsWork (($game.Section -replace '[^\w\-]', '_') + '.img')
+    # immagini degli avvii precedenti: via (quelle di un CSpect ancora aperto sono bloccate e restano)
+    Get-ChildItem -LiteralPath $OsWork -Filter '*.img' -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -ne $img } |
+        ForEach-Object { try { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop } catch {} }
     if (Test-Path -LiteralPath $img) { Remove-Item -LiteralPath $img -Force }
     Invoke-Hdfmonkey @('create', $img, "${mb}M")
     Invoke-Hdfmonkey @('putdir', $img, $sys, '/')
@@ -1249,7 +1253,8 @@ function Start-Game($game) {
         if (-not $img) { $status.Text = ''; return }
         $osArgs = (" $($game.Args) " -replace '\s-mmc=("[^"]*"|\S*)', ' ').Trim()
         $psi.Arguments        = "$osArgs `"$img`""
-        $psi.WorkingDirectory = $OsWork
+        # come per gli altri giochi: gli screenshot F5 finiscono accanto al gioco
+        $psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($game.File)
     } else {
         # cartella di lavoro = cartella dell'eseguibile: -mmc=.\ punta li',
         # salvataggi e screenshot finiscono accanto al gioco
