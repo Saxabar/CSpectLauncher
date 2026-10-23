@@ -9,6 +9,8 @@ CSpect Launcher is a simple Windows front-end that lists the ZX Spectrum Next ga
 
 The interface is available in **English, Italian, Spanish, French and German**.
 
+> 🐧 **Linux version:** a Linux version with the same features is available in the [`linux`](linux/) folder — see the [Linux README](linux/README.md). Both versions use the same `games.ini` file.
+
 ## Features
 
 - Game list with search and sorting by name or rating
@@ -21,6 +23,8 @@ The interface is available in **English, Italian, Spanish, French and German**.
 - Everything stored in a plain `games.ini` file
 
 ## Requirements
+
+The instructions below are for the **Windows** version. For Linux see the [Linux README](linux/README.md).
 
 - Windows with Windows PowerShell (already included in Windows 10 and 11)
 - The CSpect emulator by Mike Dailly: <https://mdf200.itch.io/cspect>
