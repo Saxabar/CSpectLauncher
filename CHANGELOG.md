@@ -3,6 +3,13 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## 1.4
+
+- Right-click menu: "Start with NextZXOS" loads a .nex/.snx through NextZXOS, for games that stay on a black screen in CSpect (e.g. The Lords of Midnight)
+- NextZXOS games: files saved by the game (saved games, high scores) are copied back to the game folder when CSpect is closed
+- Favorite games: add them with the right-click menu and show only them with the ♥ button next to the Sort menu
+- .tap games are loaded with the NextZXOS Tape Loader in 128K mode, so games with custom loaders (e.g. Tokimal) now start
+
 ## 1.3.1
 
 - The window size is remembered on exit and the last game started is selected when the launcher opens

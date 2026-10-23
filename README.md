@@ -1,7 +1,7 @@
 # CSpect Launcher
 
 A game launcher for the ZX Spectrum Next emulator **CSpect**.
-Version 1.3.1 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
+Version 1.4 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 
@@ -67,7 +67,7 @@ Folders inside the launcher folder are saved as relative paths (`.\GAMES`), so y
 
 ### Main window
 
-- **Left:** the game list, with a Search box and a Sort menu (Name / Rating).
+- **Left:** the game list, with a Search box, a Sort menu (Name / Rating) and a **♥** button that shows only your favorite games (the choice is remembered). Favorites have a ♥ before the title.
 - **Right:** title, rating stars, cover picture, file name, parameters and the **PLAY** button.
 - Drag the thin divider between list and details to resize the list (the width is remembered).
 - The window size is remembered when you close the launcher, and the last game you started is selected again the next time.
@@ -79,7 +79,7 @@ CSpect starts in the folder of the game's executable, so save files and screensh
 
 Supported files are `.nex`, `.snx` and `.sna`, also inside subfolders. Games that only contain NextBASIC (`.bas`), tape (`.tap`) or Z-machine (`.z3`, `.z4`, `.z5`, `.z7`, `.z8`) files are started through NextZXOS (see below). Games with none of these files are marked *(not launchable)*.
 
-If a folder contains more than one executable, the launcher asks which one to use the first time and remembers the choice.
+If a folder contains more than one executable, the launcher asks which one to use the first time and remembers the choice. The choice window has an **Always use this executable** box, checked the first time: uncheck it for compilations (one folder with several games) and the launcher asks every time, with the last choice and the box as you left them.
 
 ### .bas, .tap and .z5 games (NextZXOS)
 
@@ -97,11 +97,13 @@ CSpect does not include `zxnext.sd`: it is downloaded the first time you run CSp
 - **No:** select an SD card image you already have (saved as `nextzxos=` in `games.ini`);
 - **Cancel:** do nothing.
 
+Some `.nex` games do not start when CSpect loads them directly (for example *The Lords of Midnight*, which stays on a black screen). For these, choose **Start with NextZXOS** in the right-click menu: the game is then loaded by NextZXOS (`.nexload`, or `SPECTRUM` for `.snx`) in the same way.
+
 Notes:
 
 - `.tap` files are loaded in 128K mode; a few games that need 48K mode may not work.
 - Z-machine text adventures (`.z3`, `.z4`, `.z5`, `.z7`, `.z8`, such as Infocom games) are played with **ZXZVM**, the interpreter included in the NextZXOS distribution (`C:/GAMES/Z-Machine/ZXZVM` in `zxnext.sd`): the launcher copies it into the image and starts the story directly, without ZXZVM's welcome screen and without its "press a key to start" prompt. Files whose name is longer than 8 characters are copied as `STORY.Z5` (or `.Z3`...).
-- The image is created again at every launch, so anything the game saves (high scores, saved games) is lost when CSpect is closed. Images of previous launches are deleted automatically (except the one of a CSpect still running).
+- The image is created again at every launch. When CSpect is closed, the files that the game created or changed in its folder (saved games, high scores) are copied back to the game folder, so they are there at the next launch; keep the launcher open until you close CSpect. Images of previous launches are deleted automatically (except the one of a CSpect still running).
 - CSpect starts in the game's folder, so F5 screenshots are saved next to the game and used as the cover, as for the other games.
 - The file shown in the details ends with *(with NextZXOS)*. The CSpect option `-mmc=` is not used for these games.
 
@@ -128,12 +130,14 @@ If you take several screenshots, the most recent one is used.
 
 | Item | What it does |
 |---|---|
-| Choose executable... | pick which `.nex` / `.snx` / `.sna` (or `.bas` / `.tap` / `.z5`) file to start |
+| Choose executable... | pick which `.nex` / `.snx` / `.sna` (or `.bas` / `.tap` / `.z5`) file to start, and whether to always use it |
 | Launch parameters... | custom CSpect parameters for this game only (empty = general ones) |
 | Rename title... | change the name shown in the list (empty = folder name) |
+| ♥ Add to favorites / Remove from favorites | marks the game as a favorite (shown with ♥, and filtered by the ♥ button next to the Sort menu) |
 | Hide game / Show game again | hide or show the game in the list |
 | Delete save files (.sav)... | moves the game's `.sav` files to the Recycle Bin, after confirmation |
 | Open game folder | opens the game folder in Explorer, with the executable selected |
+| Start with NextZXOS | starts the game's `.nex` / `.snx` through NextZXOS instead of CSpect's own loader (for games that stay on a black screen); click again to turn it off |
 | Show hidden games | temporarily shows hidden games, so you can show them again |
 
 ### Settings (gear button, bottom right)
@@ -179,6 +183,9 @@ title=My title
 args=-w3 -zxnext -mmc=.\
 image=cover.png
 hidden=1
+favorite=1
+askfile=1
+boot=nextzxos
 ```
 
 | Key | Meaning |
@@ -190,6 +197,7 @@ hidden=1
 | `sort` | list order: `name` or `rating` |
 | `listwidth` | list width in pixels |
 | `window` / `maximized` | window size (`960x600`) and maximized state (`1`), saved when the launcher is closed |
+| `favonly` | `1` = show only the favorite games (♥ button) |
 | `lastgame` | last game started (folder name), selected again when the launcher opens |
 | `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` / `.z5` games (empty = `zxnext.sd` in the CSpect folder) |
 | `file` | executable to start (may include a subfolder) |
@@ -197,6 +205,9 @@ hidden=1
 | `title` | name shown in the list |
 | `image` | picture to show |
 | `hidden` | `1` = hide the game |
+| `favorite` | `1` = favorite game |
+| `boot` | `nextzxos` = start the `.nex` / `.snx` through NextZXOS |
+| `askfile` | `1` = ask which executable to start at every launch ("Always use this executable" unchecked) |
 
 Comments must be on their own line, starting with `;`.
 

@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle 
 
 # ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.3.1'
+$AppVersion   = '1.4'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'
@@ -33,6 +33,7 @@ $IniPath     = Join-Path $Root 'games.ini'
 $GameExts    = @('.nex', '.snx', '.sna')
 $OsExts      = @('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
 $ZExts       = @('.z3', '.z4', '.z5', '.z7', '.z8')  # Z-machine text adventures, played with ZXZVM
+$OsNexExts   = @('.nex', '.snx')                     # can also be started with NextZXOS (boot=nextzxos)
 $OsDirs      = @('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
 $OsOptDirs   = @('GAMES/Z-Machine/ZXZVM')            # optional: copied when the SD card image has it
 $OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # system files and SD card images created on the fly
@@ -51,6 +52,7 @@ $script:WinSize        = $null                                  # window=  (WxH 
 $script:WinMax         = $false                                 # maximized=1
 $script:LastGame       = ''                                     # lastgame=  (section of the last game started)
 $script:ShowHidden     = $false                                 # also show hidden games (this session only)
+$script:FavOnly        = $false                                 # favonly=1  (show only favorite games)
 
 # ============================================================
 #  Translations
@@ -67,6 +69,9 @@ $script:Strings = @{
     setArgs = 'Other parameters:'; setWinSize = 'Window size:'; setFullscreen = 'Full screen'; dlCSpect = 'Download CSpect'; customTag = '(custom)'
     hideMenu = 'Hide game'; unhideMenu = 'Show game again'; showHiddenMenu = 'Show hidden games'
     hiddenTag = '(hidden)'; delSavMenu = 'Delete save files (.sav)...'; openFolderMenu = 'Open game folder'
+    chooseAlways = 'Always use this executable'; askTag = '(asked at every launch)'
+    osMenu = 'Start with NextZXOS'; osSaved = 'Saved files copied to the game folder: {0}'
+    favAdd = 'Add to favorites'; favRemove = 'Remove from favorites'; favTip = 'Show only favorite games'
     delSavConfirm = "Delete {0} save file(s) of {1}?`n`n{2}`n`nThe files are moved to the Recycle Bin."
     delSavDone = 'Save files deleted: {0}'; delSavErr = "Cannot delete:`n{0}"
     info = 'Info'; aboutTitle = 'About'; aboutVersion = 'Version {0}'
@@ -114,6 +119,9 @@ $script:Strings = @{
     setArgs = 'Altri parametri:'; setWinSize = 'Grandezza finestra:'; setFullscreen = 'Schermo intero'; dlCSpect = 'Scarica CSpect'; customTag = '(personalizzati)'
     hideMenu = 'Nascondi gioco'; unhideMenu = 'Mostra di nuovo il gioco'; showHiddenMenu = 'Mostra giochi nascosti'
     hiddenTag = '(nascosto)'; delSavMenu = 'Elimina salvataggi (.sav)...'; openFolderMenu = 'Apri cartella del gioco'
+    chooseAlways = 'Usa sempre questo eseguibile'; askTag = '(chiesto a ogni avvio)'
+    osMenu = 'Avvia con NextZXOS'; osSaved = 'File salvati copiati nella cartella del gioco: {0}'
+    favAdd = 'Aggiungi ai preferiti'; favRemove = 'Togli dai preferiti'; favTip = 'Mostra solo i giochi preferiti'
     delSavConfirm = "Eliminare {0} file di salvataggio di {1}?`n`n{2}`n`nI file vengono spostati nel Cestino."
     delSavDone = 'Salvataggi eliminati: {0}'; delSavErr = "Impossibile eliminare:`n{0}"
     info = 'Info'; aboutTitle = 'Informazioni'; aboutVersion = 'Versione {0}'
@@ -161,6 +169,9 @@ $script:Strings = @{
     setArgs = 'Otros parámetros:'; setWinSize = 'Tamaño de ventana:'; setFullscreen = 'Pantalla completa'; dlCSpect = 'Descargar CSpect'; customTag = '(personalizados)'
     hideMenu = 'Ocultar juego'; unhideMenu = 'Volver a mostrar el juego'; showHiddenMenu = 'Mostrar juegos ocultos'
     hiddenTag = '(oculto)'; delSavMenu = 'Borrar partidas guardadas (.sav)...'; openFolderMenu = 'Abrir carpeta del juego'
+    chooseAlways = 'Usar siempre este ejecutable'; askTag = '(se pregunta en cada inicio)'
+    osMenu = 'Iniciar con NextZXOS'; osSaved = 'Archivos guardados copiados en la carpeta del juego: {0}'
+    favAdd = 'Añadir a favoritos'; favRemove = 'Quitar de favoritos'; favTip = 'Mostrar solo los juegos favoritos'
     delSavConfirm = "¿Borrar {0} archivo(s) de partida de {1}?`n`n{2}`n`nLos archivos se mueven a la Papelera de reciclaje."
     delSavDone = 'Partidas borradas: {0}'; delSavErr = "No se puede borrar:`n{0}"
     info = 'Info'; aboutTitle = 'Acerca de'; aboutVersion = 'Versión {0}'
@@ -208,6 +219,9 @@ $script:Strings = @{
     setArgs = 'Autres paramètres :'; setWinSize = 'Taille de la fenêtre :'; setFullscreen = 'Plein écran'; dlCSpect = 'Télécharger CSpect'; customTag = '(personnalisés)'
     hideMenu = 'Masquer le jeu'; unhideMenu = 'Afficher à nouveau le jeu'; showHiddenMenu = 'Afficher les jeux masqués'
     hiddenTag = '(masqué)'; delSavMenu = 'Supprimer les sauvegardes (.sav)...'; openFolderMenu = 'Ouvrir le dossier du jeu'
+    chooseAlways = 'Toujours utiliser cet exécutable'; askTag = '(demandé à chaque lancement)'
+    osMenu = 'Lancer avec NextZXOS'; osSaved = 'Fichiers sauvegardés copiés dans le dossier du jeu : {0}'
+    favAdd = 'Ajouter aux favoris'; favRemove = 'Retirer des favoris'; favTip = 'Afficher seulement les jeux favoris'
     delSavConfirm = "Supprimer {0} fichier(s) de sauvegarde de {1} ?`n`n{2}`n`nLes fichiers sont placés dans la Corbeille."
     delSavDone = 'Sauvegardes supprimées : {0}'; delSavErr = "Impossible de supprimer :`n{0}"
     info = 'Infos'; aboutTitle = 'À propos'; aboutVersion = 'Version {0}'
@@ -255,6 +269,9 @@ $script:Strings = @{
     setArgs = 'Weitere Parameter:'; setWinSize = 'Fenstergröße:'; setFullscreen = 'Vollbild'; dlCSpect = 'CSpect herunterladen'; customTag = '(eigene)'
     hideMenu = 'Spiel ausblenden'; unhideMenu = 'Spiel wieder anzeigen'; showHiddenMenu = 'Ausgeblendete Spiele anzeigen'
     hiddenTag = '(ausgeblendet)'; delSavMenu = 'Spielstände löschen (.sav)...'; openFolderMenu = 'Spielordner öffnen'
+    chooseAlways = 'Dieses Programm immer verwenden'; askTag = '(wird bei jedem Start gefragt)'
+    osMenu = 'Mit NextZXOS starten'; osSaved = 'Gespeicherte Dateien in den Spielordner kopiert: {0}'
+    favAdd = 'Zu Favoriten hinzufügen'; favRemove = 'Aus Favoriten entfernen'; favTip = 'Nur Lieblingsspiele anzeigen'
     delSavConfirm = "{0} Spielstand-Datei(en) von {1} löschen?`n`n{2}`n`nDie Dateien werden in den Papierkorb verschoben."
     delSavDone = 'Spielstände gelöscht: {0}'; delSavErr = "Löschen nicht möglich:`n{0}"
     info = 'Info'; aboutTitle = 'Über'; aboutVersion = 'Version {0}'
@@ -363,11 +380,13 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
         ';  listwidth=      list width in pixels (also by dragging the divider)'
         ';  window=         window size (WxH) and maximized=1, saved on exit'
         ';  lastgame=       last game started, selected when the launcher opens'
+        ';  favonly=1       show only the favorite games (heart button)'
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games'
         ';                  (default: zxnext.sd in the CSpect folder)'
         ';'
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),'
-        ';  title= image= args= optional'
+        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx'
+        ';  with NextZXOS), title= image= args= optional'
         '; ============================================================'
         ''
         '[_default]'
@@ -461,6 +480,7 @@ function Load-Settings {
     if ($set['window'] -match '^\s*(\d+)\s*x\s*(\d+)\s*$') { $script:WinSize = New-Object System.Drawing.Size([int]$Matches[1], [int]$Matches[2]) }
     $script:WinMax = ($set['maximized'] -match '^\s*(1|yes|true)\s*$')
     $script:LastGame = "$($set['lastgame'])".Trim()
+    $script:FavOnly = ($set['favonly'] -match '^\s*(1|yes|true)\s*$')
     return $ini
 }
 
@@ -742,7 +762,7 @@ function Get-Candidates([string]$folder) {
 function Select-Executable($game) {
     $dlg = New-Object System.Windows.Forms.Form
     $dlg.Text = T 'chooseTitle' $game.Title
-    $dlg.Size = New-Object System.Drawing.Size(460, 320)
+    $dlg.Size = New-Object System.Drawing.Size(460, 350)
     $dlg.StartPosition = 'CenterParent'
     $dlg.FormBorderStyle = 'FixedDialog'; $dlg.MaximizeBox = $false; $dlg.MinimizeBox = $false
     $dlg.BackColor = $cBack; $dlg.ForeColor = $cText; $dlg.Font = $font
@@ -762,34 +782,47 @@ function Select-Executable($game) {
     }
     $lb.SelectedIndex = [math]::Max(0, $idx)
 
+    # "Always use this executable": when off, the choice is asked at every launch (askfile=1 in
+    # games.ini, e.g. for compilations); on the first time, then as last saved
+    $chkAlways = New-Object System.Windows.Forms.CheckBox
+    $chkAlways.Text = T 'chooseAlways'; $chkAlways.Checked = -not $game.AskFile
+    $chkAlways.Location = New-Object System.Drawing.Point(12, 232); $chkAlways.Size = New-Object System.Drawing.Size(420, 24)
+
     $ok = New-Object System.Windows.Forms.Button
     $ok.Text = T 'ok'; $ok.DialogResult = 'OK'; $ok.FlatStyle = 'Flat'
-    $ok.Location = New-Object System.Drawing.Point(232, 235); $ok.Size = New-Object System.Drawing.Size(95, 32)
+    $ok.Location = New-Object System.Drawing.Point(232, 265); $ok.Size = New-Object System.Drawing.Size(95, 32)
     $cancel = New-Object System.Windows.Forms.Button
     $cancel.Text = T 'cancel'; $cancel.DialogResult = 'Cancel'; $cancel.FlatStyle = 'Flat'
-    $cancel.Location = New-Object System.Drawing.Point(337, 235); $cancel.Size = New-Object System.Drawing.Size(95, 32)
+    $cancel.Location = New-Object System.Drawing.Point(337, 265); $cancel.Size = New-Object System.Drawing.Size(95, 32)
     $lb.Add_DoubleClick({ $dlg.DialogResult = 'OK'; $dlg.Close() })
 
     $dlg.AcceptButton = $ok; $dlg.CancelButton = $cancel
-    $dlg.Controls.AddRange(@($lbl, $lb, $ok, $cancel))
+    $dlg.Controls.AddRange(@($lbl, $lb, $chkAlways, $ok, $cancel))
     $res = $dlg.ShowDialog($form)
     $choice = $lb.SelectedItem
+    $always = $chkAlways.Checked
     $dlg.Dispose()
     if ($res -ne 'OK' -or -not $choice) { return $false }
 
-    try { Set-IniValue $game.Section 'file' $choice } catch {
+    try {
+        Set-IniValue $game.Section 'file' $choice
+        Set-IniValue $game.Section 'askfile' $(if ($always) { '' } else { '1' })
+    } catch {
         [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), 'CSpect Launcher', 'OK', 'Warning') | Out-Null
     }
+    $game.AskFile = -not $always
     $game.File = Join-Path $game.Folder $choice
     $game.Image = Find-Image $game.Folder $game.ImageCfg $game.File
     return $true
 }
 
-# text in the list (title + stars)
+# text in the list (heart for favorites + title + stars)
 $StarFull  = [string][char]0x2605
 $StarEmpty = [string][char]0x2606
+$Heart     = [string][char]0x2665
 function Update-Display($g) {
     $d = $g.Title
+    if ($g.Favorite) { $d = "$Heart $d" }
     if (-not $g.File -and $g.Candidates.Count -eq 0) { $d += '  ' + (T 'unplayable') }
     if ($g.Hidden) { $d += '  ' + (T 'hiddenTag') }
     if ($g.Rating -gt 0) { $d += '   ' + ($StarFull * $g.Rating) }
@@ -906,6 +939,9 @@ function Get-Games {
             Title      = $title
             Rating     = $rating
             Hidden     = ($cfg['hidden'] -match '^\s*(1|yes|true)\s*$')
+        AskFile    = ($cfg['askfile'] -match '^\s*(1|yes|true)\s*$')
+        BootOs     = ($cfg['boot'] -match '^\s*nextzxos\s*$')
+        Favorite   = ($cfg['favorite'] -match '^\s*(1|yes|true)\s*$')
             Section    = $dir.Name
             Folder     = $dir.FullName
             File       = $gameFile
@@ -1215,8 +1251,11 @@ function New-Plus3Basic([byte[]]$prog, [int]$autostart) {
 
 # autoexec.bas: goes to c:/GAME and loads the game
 #   bas:  .cd /game  -  LOAD "name.bas"
-#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
+#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  SPECTRUM LOAD (NextZXOS Tape Loader in
+#         128K compatibility mode: also works with loaders that call the ROM LD-BYTES routine, e.g. Tokimal)
 #   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by New-ZvmLoader)
+#   nex:  .cd /game  -  .nexload name.nex
+#   snx:  .cd /game  -  SPECTRUM "name.snx"
 function New-Autoexec([string]$fileName, [string]$mode) {
     $enc = [System.Text.Encoding]::GetEncoding(28591)
     $load = [byte]0xEF                      # LOAD token
@@ -1224,9 +1263,11 @@ function New-Autoexec([string]$fileName, [string]$mode) {
     switch ($mode) {
         'tap' {
             $lines += , $enc.GetBytes(".run $fileName")
-            $lines += , ([byte[]](@($load) + $enc.GetBytes('"t:":') + @($load) + $enc.GetBytes('""')))
+            $lines += , ([byte[]](@([byte]0xA3, $load)))      # SPECTRUM LOAD
         }
         'zvm' { $lines += , ([byte[]](@($load) + $enc.GetBytes('"c:/zxzvm/run.bas"'))) }
+        'nex' { $lines += , $enc.GetBytes(".nexload $fileName") }
+        'snx' { $lines += , ([byte[]](@([byte]0xA3) + $enc.GetBytes('"' + $fileName + '"'))) }     # SPECTRUM "name"
         default { $lines += , ([byte[]](@($load) + $enc.GetBytes('"' + $fileName + '"'))) }
     }
     $prog = New-Object System.Collections.Generic.List[byte]
@@ -1282,7 +1323,8 @@ function New-OsImage($game) {
     if (-not $sd) { return $null }
     $sys = Update-OsFiles $sd
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
-    $mode = if ($ext -eq '.tap') { 'tap' } elseif ($ZExts -contains $ext) { 'zvm' } else { 'bas' }
+    $mode = switch ($ext) { '.tap' { 'tap' } '.nex' { 'nex' } '.snx' { 'snx' } default { if ($ZExts -contains $ext) { 'zvm' } else { 'bas' } } }
+    $copies = @()                            # extra copies in c:/GAME, not saves of the game
     if ($mode -eq 'zvm' -and -not (Test-Path -LiteralPath (Join-Path $sys 'ZXZVM\NXZXZVM.BAS'))) { throw (T 'osNoZvm' $sd) }
     $exeDir = [System.IO.Path]::GetDirectoryName($game.File)
     $name = [System.IO.Path]::GetFileName($game.File)
@@ -1290,7 +1332,9 @@ function New-OsImage($game) {
     $size = (Get-ChildItem -LiteralPath $exeDir -File -Recurse | Measure-Object Length -Sum).Sum
     $mb = [math]::Max(64, [math]::Ceiling($size * 1.25 / 1MB) + 32)
     $img = Join-Path $OsWork (($game.Section -replace '[^\w\-]', '_') + '.img')
-    # images of previous launches are removed (those of a CSpect still running are locked and stay)
+    # images of previous launches are removed (those of a CSpect still running are locked and stay),
+    # after copying back the saves of games already closed
+    Complete-OsRuns
     Get-ChildItem -LiteralPath $OsWork -Filter '*.img' -File -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -ne $img } |
         ForEach-Object { try { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop } catch {} }
@@ -1299,16 +1343,18 @@ function New-OsImage($game) {
     Invoke-Hdfmonkey @('putdir', $img, $sys, '/')
     Invoke-Hdfmonkey @('mkdir', $img, '/GAME')
     Invoke-Hdfmonkey @('putdir', $img, $exeDir, '/GAME')
-    # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
-    if ($mode -eq 'tap' -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
-        Invoke-Hdfmonkey @('put', $img, $game.File, '/GAME/GAME.TAP')
-        $name = 'GAME.TAP'
+    # .run and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
+    if (($mode -eq 'tap' -or $mode -eq 'nex') -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
+        $name = 'GAME' + $ext.ToUpper()
+        Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
+        $copies += $name
     }
     # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
     if ($mode -eq 'zvm') {
         if ($name -cnotmatch '^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$') {
             $name = 'STORY' + $ext.ToUpper()
             Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
+            $copies += $name
         }
         $zl = Join-Path $OsWork 'RUN.BAS'
         [System.IO.File]::WriteAllBytes($zl, (New-ZvmLoader (Join-Path $sys 'ZXZVM\NXZXZVM.BAS') $name))
@@ -1317,13 +1363,80 @@ function New-OsImage($game) {
     $ae = Join-Path $OsWork 'AUTOEXEC.BAS'
     [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode))
     Invoke-Hdfmonkey @('put', $img, $ae, '/NEXTZXOS/AUTOEXEC.BAS')
-    return $img
+    return [pscustomobject]@{ Img = $img; Dir = $exeDir; Copies = $copies }
+}
+
+# listing of a folder in an SD card image (hdfmonkey ls): lines "[DIR]<tab>name" or "size<tab>name"
+function Get-HdfListing([string]$img, [string]$path) {
+    $exe = Join-Path (Split-Path $script:Emulator -Parent) 'hdfmonkey\windows-64\hdfmonkey.exe'
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $exe; $psi.Arguments = "ls `"$img`" `"$path`""
+    $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true; $psi.RedirectStandardOutput = $true
+    $p = [System.Diagnostics.Process]::Start($psi)
+    $out = $p.StandardOutput.ReadToEnd()
+    $p.WaitForExit()
+    return @($out -split "`r?`n" | Where-Object { $_ -ne '' })
+}
+
+# copies back into the game folder the files that the game created or changed in c:/GAME of the
+# image (saved games, high scores...); returns how many were copied
+function Copy-OsSaves([string]$img, [string]$imgDir, [string]$hostDir, [string[]]$skip) {
+    $n = 0
+    $tmp = Join-Path $OsWork 'save.tmp'
+    foreach ($line in (Get-HdfListing $img $imgDir)) {
+        $tab = $line.IndexOf("`t")
+        if ($tab -lt 0) { continue }
+        $kind = $line.Substring(0, $tab); $name = $line.Substring($tab + 1)
+        if ($name -eq '.' -or $name -eq '..') { continue }
+        $hostPath = Join-Path $hostDir $name
+        if ($kind -eq '[DIR]') { $n += Copy-OsSaves $img "$imgDir/$name" $hostPath @(); continue }
+        if ($skip -contains $name) { continue }                  # GAME.TAP / STORY.Z5 copies made by the launcher
+        Invoke-Hdfmonkey @('get', $img, "$imgDir/$name", $tmp)
+        if ((Test-Path -LiteralPath $hostPath -PathType Leaf) -and
+            (Get-FileHash -LiteralPath $tmp).Hash -eq (Get-FileHash -LiteralPath $hostPath).Hash) { continue }
+        [void][System.IO.Directory]::CreateDirectory($hostDir)
+        Copy-Item -LiteralPath $tmp -Destination $hostPath -Force
+        $n++
+    }
+    if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Force }
+    return $n
+}
+
+# NextZXOS games still running: checked by a UI timer (no threads), when their CSpect closes the
+# saved files go back to the game folder
+$script:OsRuns = New-Object System.Collections.ArrayList
+$osTimer = New-Object System.Windows.Forms.Timer
+$osTimer.Interval = 2000
+function Complete-OsRuns {
+    foreach ($r in @($script:OsRuns)) {
+        if (-not $r.Proc.HasExited) { continue }
+        [void]$script:OsRuns.Remove($r)
+        try {
+            $n = Copy-OsSaves $r.Img '/GAME' $r.Dir $r.Copies
+            if ($n -gt 0) { $status.Text = T 'osSaved' $n }
+        } catch {}
+    }
+    if ($script:OsRuns.Count -eq 0) { $osTimer.Stop() }
+}
+$osTimer.Add_Tick({ Complete-OsRuns })
+
+function Watch-OsRun($proc, $run) {
+    [void]$script:OsRuns.Add([pscustomobject]@{ Proc = $proc; Img = $run.Img; Dir = $run.Dir; Copies = $run.Copies })
+    $osTimer.Start()
+}
+
+# $true if the game is started through NextZXOS: .bas/.tap/.z?, or a .nex/.snx with boot=nextzxos
+function Test-OsLaunch($game) {
+    if (-not $game.File) { return $false }
+    $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
+    return (($OsExts -contains $ext) -or ($game.BootOs -and $OsNexExts -contains $ext))
 }
 
 # starting a game
 function Start-Game($game) {
     if (-not $game) { return }
-    if (-not $game.File -and $game.Candidates.Count -gt 1) {
+    # executable chosen now: the first time, or every time for games with askfile=1 (compilations)
+    if ((-not $game.File -or $game.AskFile) -and $game.Candidates.Count -gt 1) {
         if (-not (Select-Executable $game)) { return }
         Show-Game $game
     }
@@ -1335,21 +1448,22 @@ function Start-Game($game) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName         = $script:Emulator
     $psi.UseShellExecute  = $false
-    if ($OsExts -contains [System.IO.Path]::GetExtension($game.File).ToLower()) {
-        # .bas / .tap: CSpect starts with the NextZXOS image created on the fly (-mmc= not needed)
+    $osRun = $null
+    if (Test-OsLaunch $game) {
+        # NextZXOS games: CSpect starts with the image created on the fly (-mmc= not needed)
         $status.Text = T 'osPrep' $game.Title
         $form.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
         $form.Refresh()
-        try { $img = New-OsImage $game } catch {
+        try { $osRun = New-OsImage $game } catch {
             $form.Cursor = [System.Windows.Forms.Cursors]::Default
             $status.Text = ''
             [System.Windows.Forms.MessageBox]::Show((T 'osErr' $_.Exception.Message), $AppName, 'OK', 'Error') | Out-Null
             return
         }
         $form.Cursor = [System.Windows.Forms.Cursors]::Default
-        if (-not $img) { $status.Text = ''; return }
+        if (-not $osRun) { $status.Text = ''; return }
         $osArgs = (" $($game.Args) " -replace '\s-mmc=("[^"]*"|\S*)', ' ').Trim()
-        $psi.Arguments        = "$osArgs `"$img`""
+        $psi.Arguments        = "$osArgs `"$($osRun.Img)`""
         # as for the other games: F5 screenshots end up next to the game
         $psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($game.File)
     } else {
@@ -1360,8 +1474,10 @@ function Start-Game($game) {
         $psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($game.File)
     }
     try {
-        [System.Diagnostics.Process]::Start($psi) | Out-Null
+        $proc = [System.Diagnostics.Process]::Start($psi)
         $status.Text = T 'launched' $game.Title
+        # NextZXOS games: when CSpect closes, the files saved in the image go back to the game folder
+        if ($osRun) { Watch-OsRun $proc $osRun }
         # selected again the next time the launcher opens
         $script:LastGame = $game.Section
         try { Set-IniValue '_default' 'lastgame' $game.Section } catch {}
@@ -1427,9 +1543,11 @@ $lblFilter = New-Object System.Windows.Forms.Label
 $lblFilter.Dock = 'Fill'; $lblFilter.ForeColor = $cDim
 $lblSortT = New-Object System.Windows.Forms.Label
 $lblSortT.ForeColor = $cDim; $lblSortT.Dock = 'Right'; $lblSortT.Width = 95
+$lblFavSpace = New-Object System.Windows.Forms.Panel      # keeps "Sort:" above the sort menu
+$lblFavSpace.Dock = 'Right'; $lblFavSpace.Width = 34
 $labelRow = New-Object System.Windows.Forms.Panel
 $labelRow.Dock = 'Top'; $labelRow.Height = 22
-$labelRow.Controls.Add($lblFilter); $labelRow.Controls.Add($lblSortT)
+$labelRow.Controls.Add($lblFilter); $labelRow.Controls.Add($lblSortT); $labelRow.Controls.Add($lblFavSpace)
 
 $txtFilter = New-Object System.Windows.Forms.TextBox
 $txtFilter.Dock = 'Fill'; $txtFilter.BackColor = $cPanel; $txtFilter.ForeColor = $cText; $txtFilter.BorderStyle = 'FixedSingle'
@@ -1441,9 +1559,20 @@ $cmbSort.Dock = 'Right'; $cmbSort.Width = 95
 $tip = New-Object System.Windows.Forms.ToolTip
 $gap = New-Object System.Windows.Forms.Panel
 $gap.Dock = 'Right'; $gap.Width = 6
+# heart button next to the sort menu: shows only the favorite games (favonly=1)
+$chkFav = New-Object System.Windows.Forms.CheckBox
+$chkFav.Appearance = 'Button'; $chkFav.FlatStyle = 'Flat'; $chkFav.TextAlign = 'MiddleCenter'
+$chkFav.Text = $Heart; $chkFav.Font = New-Object System.Drawing.Font('Segoe UI Symbol', 11)
+$chkFav.Dock = 'Right'; $chkFav.Width = 28
+$chkFav.BackColor = $cPanel; $chkFav.ForeColor = $cDim
+$chkFav.FlatAppearance.BorderColor = $cDim
+$chkFav.FlatAppearance.CheckedBackColor = [System.Drawing.Color]::FromArgb(150, 30, 60)
+$gapFav = New-Object System.Windows.Forms.Panel
+$gapFav.Dock = 'Right'; $gapFav.Width = 6
 $searchRow = New-Object System.Windows.Forms.Panel
 $searchRow.Dock = 'Top'; $searchRow.Height = 26
 $searchRow.Controls.Add($txtFilter); $searchRow.Controls.Add($gap); $searchRow.Controls.Add($cmbSort)
+$searchRow.Controls.Add($gapFav); $searchRow.Controls.Add($chkFav)
 
 $spacer = New-Object System.Windows.Forms.Panel
 $spacer.Dock = 'Top'; $spacer.Height = 8
@@ -1542,9 +1671,11 @@ $menu = New-Object System.Windows.Forms.ContextMenuStrip
 $miChoose     = $menu.Items.Add('')
 $miArgs       = $menu.Items.Add('')
 $miRename     = $menu.Items.Add('')
+$miFav        = $menu.Items.Add('')
 $miHide       = $menu.Items.Add('')
 $miDelSav     = $menu.Items.Add('')
 $miFolder     = $menu.Items.Add('')
+$miOs         = $menu.Items.Add('')
 [void]$menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
 $miShowHidden = New-Object System.Windows.Forms.ToolStripMenuItem
 $miShowHidden.CheckOnClick = $true
@@ -1565,12 +1696,14 @@ function Apply-Language {
     $cmbSort.SelectedIndex = $si
     $script:SortChanging = $false
     $tip.SetToolTip($cmbSort, (T 'sortTip'))
+    $tip.SetToolTip($chkFav, (T 'favTip'))
     $btnPlay.Text   = T 'play'
     $miChoose.Text  = T 'chooseMenu'
     $miArgs.Text    = T 'argsMenu'
     $miRename.Text  = T 'renameMenu'
     $miDelSav.Text  = T 'delSavMenu'
     $miFolder.Text  = T 'openFolderMenu'
+    $miOs.Text      = T 'osMenu'
     $miShowHidden.Text = T 'showHiddenMenu'
     $btnSettings.Text = [string][char]0x2699 + ' ' + (T 'settings')
 }
@@ -1580,7 +1713,8 @@ function Refresh-List {
     $keep = $lst.SelectedItem
     $items = @($script:AllGames | Where-Object {
         ($q -eq '' -or $_.Title.IndexOf($q, [StringComparison]::OrdinalIgnoreCase) -ge 0) -and
-        ($script:ShowHidden -or -not $_.Hidden)
+        ($script:ShowHidden -or -not $_.Hidden) -and
+        (-not $script:FavOnly -or $_.Favorite)
     })
     if ($script:SortMode -eq 'rating') {
         $items = @($items | Sort-Object @{ Expression = 'Rating'; Descending = $true }, @{ Expression = 'Title'; Descending = $false })
@@ -1606,6 +1740,7 @@ function Reload-All {
     Apply-Language
     $script:SortChanging = $true
     $cmbSort.SelectedIndex = $(if ($script:SortMode -eq 'rating') { 1 } else { 0 })
+    $chkFav.Checked = $script:FavOnly
     $script:SortChanging = $false
     $icoPath = Join-Path (Split-Path $script:Emulator -Parent) 'ZXNext.ico'
     if (Test-Path -LiteralPath $icoPath) { try { $form.Icon = New-Object System.Drawing.Icon($icoPath) } catch {} }
@@ -1653,7 +1788,8 @@ function Show-Game($g) {
         $argTxt = $g.Args
         if ($g.ArgsCfg) { $argTxt += '  ' + (T 'customTag') }
         $rel = $g.File.Substring($g.Folder.TrimEnd('\').Length + 1)
-        if ($OsExts -contains [System.IO.Path]::GetExtension($g.File).ToLower()) { $rel += '  ' + (T 'osTag') }
+        if (Test-OsLaunch $g) { $rel += '  ' + (T 'osTag') }
+        if ($g.AskFile -and $g.Candidates.Count -gt 1) { $rel += '  ' + (T 'askTag') }
         $lblFile.Text = T 'fileLine' $rel $argTxt
         $btnPlay.Enabled = $true
     } elseif ($g.Candidates.Count -gt 1) {
@@ -1687,8 +1823,12 @@ $menu.Add_Opening({
     $miArgs.Enabled   = [bool]$g
     $miRename.Enabled = [bool]$g
     $miHide.Text      = if ($g -and $g.Hidden) { T 'unhideMenu' } else { T 'hideMenu' }
+    $miFav.Enabled    = [bool]$g
+    $miFav.Text       = "$Heart  " + $(if ($g -and $g.Favorite) { T 'favRemove' } else { T 'favAdd' })
     $miDelSav.Enabled = ($g -and @(Get-SaveFiles $g).Count -gt 0)
     $miFolder.Enabled = [bool]$g
+    $miOs.Enabled     = ($g -and @($g.Candidates | Where-Object { $OsNexExts -contains [System.IO.Path]::GetExtension($_).ToLower() }).Count -gt 0)
+    $miOs.Checked     = ($g -and $g.BootOs)
     $miShowHidden.Checked = $script:ShowHidden
 })
 
@@ -1724,6 +1864,18 @@ $miRename.Add_Click({
 })
 
 # hide / show again a single game (hidden=1 in games.ini)
+# add / remove the game from the favorites (favorite=1 in games.ini)
+$miFav.Add_Click({
+    $g = $lst.SelectedItem
+    if (-not $g) { return }
+    $g.Favorite = -not $g.Favorite
+    try { Set-IniValue $g.Section 'favorite' $(if ($g.Favorite) { '1' } else { '' }) } catch {
+        [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), $AppName, 'OK', 'Warning') | Out-Null
+    }
+    Update-Display $g
+    Refresh-List
+})
+
 $miHide.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1764,6 +1916,18 @@ $miDelSav.Add_Click({
 })
 
 # opens the game folder in Explorer, with the executable selected when there is one
+# start the .nex/.snx through NextZXOS instead of CSpect's own loader (boot=nextzxos), for
+# games that do not start when CSpect loads them directly
+$miOs.Add_Click({
+    $g = $lst.SelectedItem
+    if (-not $g) { return }
+    $g.BootOs = -not $g.BootOs
+    try { Set-IniValue $g.Section 'boot' $(if ($g.BootOs) { 'nextzxos' } else { '' }) } catch {
+        [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), $AppName, 'OK', 'Warning') | Out-Null
+    }
+    Show-Game $g
+})
+
 $miFolder.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1780,6 +1944,15 @@ $miFolder.Add_Click({
 
 $btnPlay.Add_Click({ Start-Game $lst.SelectedItem })
 $txtFilter.Add_TextChanged({ Refresh-List })
+
+$chkFav.Add_CheckedChanged({
+    $chkFav.ForeColor = if ($chkFav.Checked) { [System.Drawing.Color]::White } else { $cDim }
+    if ($script:SortChanging) { return }
+    $script:FavOnly = $chkFav.Checked
+    try { Set-IniValue '_default' 'favonly' $(if ($script:FavOnly) { '1' } else { '' }) } catch {}
+    Refresh-List
+    $lst.Focus()
+})
 
 $cmbSort.Add_SelectedIndexChanged({
     if ($script:SortChanging) { return }
@@ -1838,6 +2011,7 @@ $script:AllGames = Get-Games
 Apply-Language
 $script:SortChanging = $true
 $cmbSort.SelectedIndex = $(if ($script:SortMode -eq 'rating') { 1 } else { 0 })
+$chkFav.Checked = $script:FavOnly
 $script:SortChanging = $false
 $left.Width = $script:ListWidth
 # window size saved on exit (at most as big as the screen)

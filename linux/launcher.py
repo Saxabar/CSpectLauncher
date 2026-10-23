@@ -48,7 +48,7 @@ except Exception:
 
 # ---------- program information ----------
 APP_NAME = 'CSpect Launcher'
-APP_VERSION = '1.3.1'
+APP_VERSION = '1.4'
 APP_COPYRIGHT = '(c) 2026 Giuseppe Papa - GPL-3.0'
 APP_URL = 'https://github.com/Saxabar/CSpectLauncher'
 CSPECT_URL = 'https://mdf200.itch.io/cspect'
@@ -63,6 +63,7 @@ INI_PATH = os.path.join(ROOT, 'games.ini')
 GAME_EXTS = ('.nex', '.snx', '.sna')
 OS_EXTS = ('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
 Z_EXTS = ('.z3', '.z4', '.z5', '.z7', '.z8')    # Z-machine text adventures, played with ZXZVM
+OS_NEX_EXTS = ('.nex', '.snx')                  # can also be started with NextZXOS (boot=nextzxos)
 OS_DIRS = ('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
 OS_OPT_DIRS = ('GAMES/Z-Machine/ZXZVM',)        # optional: copied when the SD card image has it
 # NextZXOS system files and SD card images created on the fly
@@ -84,6 +85,7 @@ C_PLAY = '#00963c'
 C_PLAY_ACTIVE = '#00b048'
 STAR_FULL = '★'
 STAR_EMPTY = '☆'
+HEART = '♥'
 
 LANG_NAMES = [('en', 'English'), ('it', 'Italiano'), ('es', 'Español'), ('fr', 'Français'), ('de', 'Deutsch')]
 
@@ -109,6 +111,13 @@ STRINGS = {
         "hiddenTag": "(hidden)",
         "delSavMenu": "Delete save files (.sav)...",
         "openFolderMenu": "Open game folder",
+        "chooseAlways": "Always use this executable",
+        "askTag": "(asked at every launch)",
+        "osMenu": "Start with NextZXOS",
+        "osSaved": "Saved files copied to the game folder: {0}",
+        "favAdd": "Add to favorites",
+        "favRemove": "Remove from favorites",
+        "favTip": "Show only favorite games",
         "delSavConfirm": "Delete {0} save file(s) of {1}?\n\n{2}\n\nThe files are moved to the Trash.",
         "delSavDone": "Save files deleted: {0}",
         "delSavErr": "Cannot delete:\n{0}",
@@ -185,6 +194,13 @@ STRINGS = {
         "hiddenTag": "(nascosto)",
         "delSavMenu": "Elimina salvataggi (.sav)...",
         "openFolderMenu": "Apri cartella del gioco",
+        "chooseAlways": "Usa sempre questo eseguibile",
+        "askTag": "(chiesto a ogni avvio)",
+        "osMenu": "Avvia con NextZXOS",
+        "osSaved": "File salvati copiati nella cartella del gioco: {0}",
+        "favAdd": "Aggiungi ai preferiti",
+        "favRemove": "Togli dai preferiti",
+        "favTip": "Mostra solo i giochi preferiti",
         "delSavConfirm": "Eliminare {0} file di salvataggio di {1}?\n\n{2}\n\nI file vengono spostati nel Cestino.",
         "delSavDone": "Salvataggi eliminati: {0}",
         "delSavErr": "Impossibile eliminare:\n{0}",
@@ -261,6 +277,13 @@ STRINGS = {
         "hiddenTag": "(oculto)",
         "delSavMenu": "Borrar partidas guardadas (.sav)...",
         "openFolderMenu": "Abrir carpeta del juego",
+        "chooseAlways": "Usar siempre este ejecutable",
+        "askTag": "(se pregunta en cada inicio)",
+        "osMenu": "Iniciar con NextZXOS",
+        "osSaved": "Archivos guardados copiados en la carpeta del juego: {0}",
+        "favAdd": "Añadir a favoritos",
+        "favRemove": "Quitar de favoritos",
+        "favTip": "Mostrar solo los juegos favoritos",
         "delSavConfirm": "¿Borrar {0} archivo(s) de partida de {1}?\n\n{2}\n\nLos archivos se mueven a la Papelera.",
         "delSavDone": "Partidas borradas: {0}",
         "delSavErr": "No se puede borrar:\n{0}",
@@ -337,6 +360,13 @@ STRINGS = {
         "hiddenTag": "(masqué)",
         "delSavMenu": "Supprimer les sauvegardes (.sav)...",
         "openFolderMenu": "Ouvrir le dossier du jeu",
+        "chooseAlways": "Toujours utiliser cet exécutable",
+        "askTag": "(demandé à chaque lancement)",
+        "osMenu": "Lancer avec NextZXOS",
+        "osSaved": "Fichiers sauvegardés copiés dans le dossier du jeu : {0}",
+        "favAdd": "Ajouter aux favoris",
+        "favRemove": "Retirer des favoris",
+        "favTip": "Afficher seulement les jeux favoris",
         "delSavConfirm": "Supprimer {0} fichier(s) de sauvegarde de {1} ?\n\n{2}\n\nLes fichiers sont placés dans la Corbeille.",
         "delSavDone": "Sauvegardes supprimées : {0}",
         "delSavErr": "Impossible de supprimer :\n{0}",
@@ -413,6 +443,13 @@ STRINGS = {
         "hiddenTag": "(ausgeblendet)",
         "delSavMenu": "Spielstände löschen (.sav)...",
         "openFolderMenu": "Spielordner öffnen",
+        "chooseAlways": "Dieses Programm immer verwenden",
+        "askTag": "(wird bei jedem Start gefragt)",
+        "osMenu": "Mit NextZXOS starten",
+        "osSaved": "Gespeicherte Dateien in den Spielordner kopiert: {0}",
+        "favAdd": "Zu Favoriten hinzufügen",
+        "favRemove": "Aus Favoriten entfernen",
+        "favTip": "Nur Lieblingsspiele anzeigen",
         "delSavConfirm": "{0} Spielstand-Datei(en) von {1} löschen?\n\n{2}\n\nDie Dateien werden in den Papierkorb verschoben.",
         "delSavDone": "Spielstände gelöscht: {0}",
         "delSavErr": "Löschen nicht möglich:\n{0}",
@@ -485,6 +522,7 @@ class Settings:
     win_size = None         # window= (width, height) saved on exit
     win_max = False         # maximized=1
     last_game = ''          # lastgame= section of the last game started
+    fav_only = False        # favonly=1 show only the favorite games
 
 
 S = Settings()
@@ -585,11 +623,13 @@ def new_ini_file(lang, games, cspect, gargs):
         ';  listwidth=      list width in pixels (also by dragging the divider)',
         ';  window=         window size (WxH) and maximized=1, saved on exit',
         ';  lastgame=       last game started, selected when the launcher opens',
+        ';  favonly=1       show only the favorite games (heart button)',
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games',
         ';                  (default: zxnext.sd in the CSpect folder)',
         ';',
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),',
-        ';  title= image= args= optional',
+        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx',
+        ';  with NextZXOS), title= image= args= optional',
         '; ============================================================',
         '',
         '[_default]',
@@ -703,6 +743,7 @@ def load_settings():
     S.win_size = (int(m.group(1)), int(m.group(2))) if m else None
     S.win_max = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('maximized') or '', re.I))
     S.last_game = (s.get('lastgame') or '').strip()
+    S.fav_only = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('favonly') or '', re.I))
     return ini
 
 
@@ -778,6 +819,8 @@ def find_image(folder, image_cfg, game_file):
 
 def update_display(g):
     d = g.title
+    if g.favorite:
+        d = HEART + ' ' + d
     if not g.file and not g.candidates:
         d += '  ' + T('unplayable')
     if g.hidden:
@@ -840,6 +883,9 @@ def get_games():
         m = re.match(r'^\s*([0-5])\s*$', cfg.get('rating', ''))
         g.rating = int(m.group(1)) if m else 0
         g.hidden = bool(re.match(r'^\s*(1|yes|true)\s*$', cfg.get('hidden', ''), re.I))
+        g.favorite = bool(re.match(r'^\s*(1|yes|true)\s*$', cfg.get('favorite', ''), re.I))
+        g.ask_file = bool(re.match(r'^\s*(1|yes|true)\s*$', cfg.get('askfile', ''), re.I))
+        g.boot_os = bool(re.match(r'^\s*nextzxos\s*$', cfg.get('boot', ''), re.I))
         g.image_cfg = cfg.get('image', '')
         g.image = find_image(d.path, g.image_cfg, g.file)
         update_display(g)
@@ -1042,6 +1088,7 @@ def run_hdfmonkey(*args):
     r = subprocess.run([exe] + list(args), capture_output=True, text=True, errors='replace')
     if r.returncode != 0:
         raise RuntimeError('hdfmonkey %s: %s' % (args[0], (r.stdout + r.stderr).strip()))
+    return r.stdout
 
 
 def update_os_files(sd_image):
@@ -1108,16 +1155,23 @@ def plus3_basic(prog, autostart):
 
 # autoexec.bas: goes to c:/GAME and loads the game
 #   bas:  .cd /game  -  LOAD "name.bas"
-#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
+#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  SPECTRUM LOAD (NextZXOS Tape Loader in
+#         128K compatibility mode: also works with loaders that call the ROM LD-BYTES routine, e.g. Tokimal)
 #   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by make_zvm_loader)
+#   nex:  .cd /game  -  .nexload name.nex
+#   snx:  .cd /game  -  SPECTRUM "name.snx"
 def make_autoexec(file_name, mode):
     load = b'\xef'                          # LOAD token
     name = file_name.encode('latin-1', 'replace')
     lines = [b'.cd /game']
     if mode == 'tap':
-        lines += [b'.run ' + name, load + b'"t:":' + load + b'""']
+        lines += [b'.run ' + name, b'\xa3' + load]                 # SPECTRUM LOAD
     elif mode == 'zvm':
         lines += [load + b'"c:/zxzvm/run.bas"']
+    elif mode == 'nex':
+        lines += [b'.nexload ' + name]
+    elif mode == 'snx':
+        lines += [b'\xa3"' + name + b'"']                          # SPECTRUM "name"
     else:
         lines += [load + b'"' + name + b'"']
     return plus3_basic(b''.join(basic_line(10 * (i + 1), body) for i, body in enumerate(lines)), 10)
@@ -1175,10 +1229,11 @@ def file_in_use(path):
 
 
 def new_os_image(g, sd_image):
-    """Creates the SD card image of the game and returns its path."""
+    """Creates the SD card image of the game; returns {'img', 'dir', 'copies'}."""
     sysdir = update_os_files(sd_image)
     ext = os.path.splitext(g.file)[1].lower()
-    mode = 'tap' if ext == '.tap' else ('zvm' if ext in Z_EXTS else 'bas')
+    mode = {'.tap': 'tap', '.nex': 'nex', '.snx': 'snx'}.get(ext, 'zvm' if ext in Z_EXTS else 'bas')
+    copies = []                             # extra copies in c:/GAME, not saves of the game
     zvm_bas = os.path.join(sysdir, 'ZXZVM', 'NXZXZVM.BAS')
     if mode == 'zvm' and not os.path.isfile(zvm_bas):
         raise RuntimeError(T('osNoZvm', sd_image))
@@ -1188,7 +1243,9 @@ def new_os_image(g, sd_image):
     size = sum(os.path.getsize(os.path.join(dp, f)) for dp, dn, fs in os.walk(exe_dir) for f in fs)
     mb = max(64, -(-size * 5 // 4 // (1024 * 1024)) + 32)
     img = os.path.join(OS_WORK, re.sub(r'[^\w\-]', '_', g.section) + '.img')
-    # images of previous launches are removed, except those still used by a running CSpect
+    # images of previous launches are removed, except those still used by a running CSpect,
+    # after copying back the saves of games already closed
+    complete_os_runs()
     for f in os.listdir(OS_WORK):
         p = os.path.join(OS_WORK, f)
         if f.lower().endswith('.img') and p != img and not file_in_use(p):
@@ -1202,15 +1259,17 @@ def new_os_image(g, sd_image):
     run_hdfmonkey('putdir', img, sysdir, '/')
     run_hdfmonkey('mkdir', img, '/GAME')
     run_hdfmonkey('putdir', img, exe_dir, '/GAME')
-    # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
-    if mode == 'tap' and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
-        run_hdfmonkey('put', img, g.file, '/GAME/GAME.TAP')
-        name = 'GAME.TAP'
+    # .run and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
+    if mode in ('tap', 'nex') and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
+        name = 'GAME' + ext.upper()
+        run_hdfmonkey('put', img, g.file, '/GAME/' + name)
+        copies.append(name)
     # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
     if mode == 'zvm':
         if not re.match(r'^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$', name):
             name = 'STORY' + ext.upper()
             run_hdfmonkey('put', img, g.file, '/GAME/' + name)
+            copies.append(name)
         zl = os.path.join(OS_WORK, 'RUN.BAS')
         with open(zl, 'wb') as f:
             f.write(make_zvm_loader(zvm_bas, name))
@@ -1219,7 +1278,77 @@ def new_os_image(g, sd_image):
     with open(ae, 'wb') as f:
         f.write(make_autoexec(name, mode))
     run_hdfmonkey('put', img, ae, '/NEXTZXOS/AUTOEXEC.BAS')
-    return img
+    return {'img': img, 'dir': exe_dir, 'copies': copies}
+
+
+def hdf_listing(img, path):
+    """Listing of a folder in an SD card image (hdfmonkey ls): (name, is_dir) pairs."""
+    out = run_hdfmonkey('ls', img, path)
+    res = []
+    for line in out.splitlines():
+        if '\t' not in line:
+            continue
+        kind, name = line.split('\t', 1)
+        if name not in ('.', '..'):
+            res.append((name, kind == '[DIR]'))
+    return res
+
+
+def copy_os_saves(img, img_dir, host_dir, skip):
+    """Copies back into the game folder the files that the game created or changed in c:/GAME of
+    the image (saved games, high scores...); returns how many were copied."""
+    n = 0
+    tmp = os.path.join(OS_WORK, 'save.tmp')
+    for name, is_dir in hdf_listing(img, img_dir):
+        host = os.path.join(host_dir, name)
+        if is_dir:
+            n += copy_os_saves(img, img_dir + '/' + name, host, ())
+            continue
+        if name in skip:                                  # GAME.TAP / STORY.Z5 copies made by the launcher
+            continue
+        run_hdfmonkey('get', img, img_dir + '/' + name, tmp)
+        with open(tmp, 'rb') as f:
+            data = f.read()
+        try:
+            with open(host, 'rb') as f:
+                if f.read() == data:
+                    continue
+        except OSError:
+            pass
+        os.makedirs(host_dir, exist_ok=True)
+        with open(host, 'wb') as f:
+            f.write(data)
+        n += 1
+    if os.path.exists(tmp):
+        os.remove(tmp)
+    return n
+
+
+# NextZXOS games still running: checked every 2 seconds by the user interface (root.after),
+# when their CSpect closes the saved files go back to the game folder
+OS_RUNS = []
+
+
+def complete_os_runs():
+    """Copies back the saves of the NextZXOS games whose CSpect has closed; returns how many files."""
+    total = 0
+    for r in list(OS_RUNS):
+        if r['proc'].poll() is None:
+            continue
+        OS_RUNS.remove(r)
+        try:
+            total += copy_os_saves(r['img'], '/GAME', r['dir'], r['copies'])
+        except (OSError, RuntimeError):
+            pass
+    return total
+
+
+def test_os_launch(g):
+    """True if the game is started through NextZXOS: .bas/.tap/.z?, or a .nex/.snx with boot=nextzxos."""
+    if not g.file:
+        return False
+    ext = os.path.splitext(g.file)[1].lower()
+    return ext in OS_EXTS or (g.boot_os and ext in OS_NEX_EXTS)
 
 
 # ============================================================
@@ -1234,6 +1363,7 @@ class Launcher:
         self.photo = None
         self.pil_image = None
         self._resize_job = None
+        self._os_watch = None   # timer of _watch_os_runs (NextZXOS games running)
         self._hover = None
         self.raw_photo = None
 
@@ -1320,10 +1450,17 @@ class Launcher:
         lrow.pack(fill='x')
         self.lbl_search = self.label(lrow, fg=C_DIM, anchor='w')
         self.lbl_search.pack(side='left')
+        tk.Frame(lrow, bg=C_BACK, width=34).pack(side='right')     # keeps "Sort:" above the sort menu
         self.lbl_sort = self.label(lrow, fg=C_DIM, anchor='w', width=11)
         self.lbl_sort.pack(side='right')
         srow = tk.Frame(left, bg=C_BACK)
         srow.pack(fill='x', pady=(2, 8))
+        # heart button next to the sort menu: shows only the favorite games (favonly=1)
+        self.fav_var = tk.BooleanVar(value=S.fav_only)
+        self.chk_fav = tk.Checkbutton(srow, text=HEART, variable=self.fav_var, indicatoron=False, command=self._fav_filter,
+                                      bg=C_PANEL, fg=C_DIM, selectcolor='#961e3c', activebackground='#33333b',
+                                      activeforeground=C_TEXT, relief='flat', bd=1, width=2, cursor='hand2', font=self.f_norm)
+        self.chk_fav.pack(side='right', padx=(6, 0))
         self.sort_var = tk.StringVar()
         self.cmb_sort = ttk.Combobox(srow, textvariable=self.sort_var, state='readonly', width=9, font=self.f_norm)
         self.cmb_sort.pack(side='right', padx=(6, 0))
@@ -1389,6 +1526,7 @@ class Launcher:
         self.menu = tk.Menu(self.root, tearoff=0, bg=C_PANEL, fg=C_TEXT, activebackground='#0078d7',
                             activeforeground='white', disabledforeground='#666', relief='flat', font=self.f_norm)
         self.show_hidden_var = tk.BooleanVar(value=False)
+        self.boot_os_var = tk.BooleanVar(value=False)
 
     def _draw_stripe(self, e=None):
         c = self.stripe
@@ -1450,8 +1588,9 @@ class Launcher:
             set_ini_value('_default', 'maximized', '1' if zoomed else '')
         except OSError:
             pass
-        if getattr(self, '_pic_job', None):
-            self.root.after_cancel(self._pic_job)
+        for job in (getattr(self, '_pic_job', None), self._os_watch):
+            if job:
+                self.root.after_cancel(job)
         self.root.destroy()
 
     def _move(self, d):
@@ -1475,6 +1614,8 @@ class Launcher:
         self.lbl_sort.config(text=T('sortLbl'))
         self.cmb_sort.config(values=[T('sortName'), T('sortRating')])
         self.sort_var.set(T('sortRating') if S.sort_mode == 'rating' else T('sortName'))
+        self.fav_var.set(S.fav_only)
+        self.chk_fav.config(fg='white' if S.fav_only else C_DIM)
         self.btn_play.config(text=T('play'))
         self.btn_settings.config(text='⚙ ' + T('settings'))
 
@@ -1495,7 +1636,8 @@ class Launcher:
     def refresh_list(self):
         q = self.search_var.get().strip().lower()
         keep = self.selected()
-        items = [g for g in self.games if (not q or q in g.title.lower()) and (self.show_hidden or not g.hidden)]
+        items = [g for g in self.games if (not q or q in g.title.lower()) and (self.show_hidden or not g.hidden)
+                 and (not S.fav_only or g.favorite)]
         if S.sort_mode == 'rating':
             items.sort(key=lambda g: (-g.rating, g.title.lower()))
         else:
@@ -1586,8 +1728,10 @@ class Launcher:
         if g.file:
             a = g.args + ('  ' + T('customTag') if g.args_cfg else '')
             rel = os.path.relpath(g.file, g.folder).replace(os.sep, '/')
-            if os.path.splitext(g.file)[1].lower() in OS_EXTS:
+            if test_os_launch(g):
                 rel += '  ' + T('osTag')
+            if g.ask_file and len(g.candidates) > 1:
+                rel += '  ' + T('askTag')
             self.lbl_file.config(text=T('fileLine', rel, a))
             self.btn_play.config(state='normal')
         elif len(g.candidates) > 1:
@@ -1667,7 +1811,8 @@ class Launcher:
     def start_game(self, g):
         if not g:
             return 'break'
-        if not g.file and len(g.candidates) > 1:
+        # executable chosen now: the first time, or every time for games with askfile=1 (compilations)
+        if (not g.file or g.ask_file) and len(g.candidates) > 1:
             if not self.select_executable(g):
                 return 'break'
             self.show_game(g)
@@ -1683,8 +1828,9 @@ class Launcher:
                 messagebox.showerror(APP_NAME, T('monoMissingMac' if IS_MAC else 'monoMissing'), parent=self.root)
                 return 'break'
             cmd.append(mono)
-        if os.path.splitext(g.file)[1].lower() in OS_EXTS:
-            # .bas / .tap: CSpect starts with the NextZXOS image created on the fly (-mmc= not needed)
+        run = None
+        if test_os_launch(g):
+            # NextZXOS games: CSpect starts with the NextZXOS image created on the fly (-mmc= not needed)
             sd = self.find_sd_image()
             if not sd:
                 return 'break'
@@ -1692,14 +1838,14 @@ class Launcher:
             self.root.config(cursor='watch')
             self.root.update()
             try:
-                img = new_os_image(g, sd)
+                run = new_os_image(g, sd)
             except (OSError, RuntimeError) as ex:
                 self.status.config(text='')
                 messagebox.showerror(APP_NAME, T('osErr', ex), parent=self.root)
                 return 'break'
             finally:
                 self.root.config(cursor='')
-            cmd += [S.emulator] + [a for a in split_args(g.args) if not a.lower().startswith('-mmc=')] + [img]
+            cmd += [S.emulator] + [a for a in split_args(g.args) if not a.lower().startswith('-mmc=')] + [run['img']]
             work_dir = os.path.dirname(g.file)      # as for the other games: F5 screenshots end up next to the game
         else:
             # working folder = folder of the executable: -mmc=./ points there,
@@ -1707,9 +1853,14 @@ class Launcher:
             work_dir = os.path.dirname(g.file)
             cmd += [S.emulator] + split_args(g.args) + ['./' + os.path.basename(g.file)]
         try:
-            subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            proc = subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.status.config(text=T('launched', g.title))
+            # NextZXOS games: when CSpect closes, the files saved in the image go back to the game folder
+            if run:
+                OS_RUNS.append(dict(run, proc=proc))
+                if not self._os_watch:
+                    self._os_watch = self.root.after(2000, self._watch_os_runs)
             # selected again the next time the launcher opens
             S.last_game = g.section
             try:
@@ -1719,6 +1870,15 @@ class Launcher:
         except OSError as ex:
             messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
         return 'break'
+
+    def _watch_os_runs(self):
+        """Every 2 seconds while NextZXOS games are running: copies back their saves when CSpect closes."""
+        self._os_watch = None
+        n = complete_os_runs()
+        if n:
+            self.status.config(text=T('osSaved', n))
+        if OS_RUNS:
+            self._os_watch = self.root.after(2000, self._watch_os_runs)
 
     def wait_zxos_download(self, proc, img):
         """Waiting window while ZXOS.sh downloads the image (CSpect stays black meanwhile).
@@ -1877,6 +2037,11 @@ class Launcher:
         idx = g.candidates.index(cur) if cur in g.candidates else 0
         lb.selection_set(idx)
         lb.see(idx)
+        # "Always use this executable": when off, the choice is asked at every launch (askfile=1 in
+        # games.ini, e.g. for compilations); on the first time, then as last saved
+        always_var = tk.BooleanVar(value=not g.ask_file)
+        tk.Checkbutton(d, text=T('chooseAlways'), variable=always_var, bg=C_BACK, fg=C_TEXT, selectcolor=C_PANEL,
+                       activebackground=C_BACK, activeforeground=C_TEXT, font=self.f_norm, anchor='w').pack(fill='x', pady=(6, 0))
         result = {}
 
         def ok():
@@ -1890,10 +2055,13 @@ class Launcher:
         choice = result.get('choice')
         if not choice:
             return False
+        always = always_var.get()
         try:
             set_ini_value(g.section, 'file', choice)
+            set_ini_value(g.section, 'askfile', '' if always else '1')
         except OSError as ex:
             messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
+        g.ask_file = not always
         g.file = os.path.join(g.folder, choice)
         g.image = find_image(g.folder, g.image_cfg, g.file)
         return True
@@ -2094,10 +2262,15 @@ class Launcher:
                       state='normal' if g.candidates else 'disabled')
         m.add_command(label=T('argsMenu'), command=lambda: self._args(g))
         m.add_command(label=T('renameMenu'), command=lambda: self._rename(g))
+        m.add_command(label=HEART + '  ' + (T('favRemove') if g.favorite else T('favAdd')), command=lambda: self._favorite(g))
         m.add_command(label=T('unhideMenu') if g.hidden else T('hideMenu'), command=lambda: self._hide(g))
         m.add_command(label=T('delSavMenu'), command=lambda: self._del_saves(g),
                       state='normal' if get_save_files(g) else 'disabled')
         m.add_command(label=T('openFolderMenu'), command=lambda: self._open_folder(g))
+        self.boot_os_var.set(g.boot_os)
+        nex = any(os.path.splitext(c)[1].lower() in OS_NEX_EXTS for c in g.candidates)
+        m.add_checkbutton(label=T('osMenu'), variable=self.boot_os_var, command=lambda: self._boot_os(g),
+                          state='normal' if nex else 'disabled', selectcolor=C_TEXT)
         m.add_separator()
         self.show_hidden_var.set(self.show_hidden)
         m.add_checkbutton(label=T('showHiddenMenu'), variable=self.show_hidden_var, command=self._toggle_hidden,
@@ -2147,6 +2320,35 @@ class Launcher:
         g.title_cfg = v
         g.title = v or g.section
         update_display(g)
+        self.refresh_list()
+
+    def _favorite(self, g):
+        """Adds / removes the game from the favorites (favorite=1 in games.ini)."""
+        g.favorite = not g.favorite
+        try:
+            set_ini_value(g.section, 'favorite', '1' if g.favorite else '')
+        except OSError as ex:
+            messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
+        update_display(g)
+        self.refresh_list()
+
+    def _boot_os(self, g):
+        """Starts the .nex/.snx through NextZXOS instead of CSpect's own loader (boot=nextzxos)."""
+        g.boot_os = self.boot_os_var.get()
+        try:
+            set_ini_value(g.section, 'boot', 'nextzxos' if g.boot_os else '')
+        except OSError as ex:
+            messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
+        self.show_game(g)
+
+    def _fav_filter(self):
+        """Heart button: shows only the favorite games (favonly=1, remembered)."""
+        S.fav_only = self.fav_var.get()
+        self.chk_fav.config(fg='white' if S.fav_only else C_DIM)
+        try:
+            set_ini_value('_default', 'favonly', '1' if S.fav_only else '')
+        except OSError:
+            pass
         self.refresh_list()
 
     def _hide(self, g):
