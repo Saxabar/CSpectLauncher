@@ -1,7 +1,7 @@
-# CSpect Launcher for Linux
+# CSpect Launcher for Linux and macOS
 
-The Linux version of **CSpect Launcher**, the game launcher for the ZX Spectrum Next emulator CSpect.
-Version 1.2 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
+The Linux and macOS version of **CSpect Launcher**, the game launcher for the ZX Spectrum Next emulator CSpect. For macOS see the [macOS section](#macos) below.
+Version 1.3 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
 
 ![CSpect Launcher for Linux](screenshot-linux.png)
 
@@ -38,7 +38,7 @@ Package names may differ slightly between distribution versions.
 
 ## Installation
 
-Copy `launcher.py` and `cspect-launcher.sh` into a folder of your choice and make the script executable:
+Download `CSpectLauncher-Linux-macOS-<version>.tar.gz` from the [Releases](https://github.com/Saxabar/CSpectLauncher/releases) and extract it (`tar -xzf CSpectLauncher-Linux-macOS-<version>.tar.gz`), or copy `launcher.py` and `cspect-launcher.sh` into a folder of your choice. If the scripts are not executable, run:
 
 ```sh
 chmod +x cspect-launcher.sh launcher.py
@@ -92,6 +92,35 @@ Categories=Game;Emulator;
 - "Delete save files (.sav)" moves the files to the desktop **Trash**.
 - File names on Linux are case sensitive; the launcher still recognises extensions such as `.NEX` or `.SAV` in upper case.
 - `.bas` and `.tap` games (started through NextZXOS, see the main README) use the Linux build of hdfmonkey included with CSpect (`hdfmonkey/linux-musl/hdfmonkey`, made executable automatically if needed). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`. The SD card image is the `zxnext.sd` downloaded by CSpect's `ZXOS.sh`; if it is missing, the launcher offers to run `ZXOS.sh` (with `bash`) to download it.
+
+## macOS
+
+The same `launcher.py` also runs on macOS. This is **experimental**: it has not been tested on a Mac yet, so please report any problem.
+
+### Requirements
+
+- **Python 3** with **Tkinter**: the installer from <https://www.python.org/downloads/macos/> includes it. With Homebrew: `brew install python python-tk`.
+- **Mono**, needed by CSpect on macOS: <https://www.mono-project.com/download/stable/> (CSpect's ReadMe asks for the latest version). Whether Mono and CSpect run well on Macs with Apple chips (M1–M4) has not been checked.
+- *Optional:* **Pillow** (`pip3 install pillow`), for `.jpg` / `.bmp` covers and smoother picture scaling.
+- The **CSpect** emulator by Mike Dailly: <https://mdf200.itch.io/cspect>
+
+### Starting
+
+Double-click **`cspect-launcher.command`** in the Finder (or run `./cspect-launcher.command` in Terminal). If the files lost their execute permission, run once in Terminal, in the launcher folder:
+
+```sh
+chmod +x cspect-launcher.command launcher.py
+```
+
+The first time, macOS may block the script or CSpect's `hdfmonkey` because they are not signed by an identified developer. In that case right-click the file and choose **Open**, or allow it in **System Settings → Privacy & Security**. The launcher never changes these security settings by itself.
+
+### Differences on macOS
+
+- Mono is also looked for in `/Library/Frameworks/Mono.framework`, `/opt/homebrew/bin` and `/usr/local/bin`, because programs started from the Finder do not always see the Terminal `PATH`.
+- "Delete save files (.sav)" moves the files to the macOS **Trash**.
+- Right-click (or Control-click) opens the game menu; **Cmd+1 … Cmd+5** also set the rating.
+- `.bas` and `.tap` games use the macOS build of hdfmonkey included with CSpect (`macos-mn` on Apple chips, `macos-intel` on Intel Macs). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`.
+- CSpect's changelog says that downloading the NextZXOS SD card image with `ZXOS.sh` on Mac and Linux can be very slow.
 
 ## License
 

@@ -1,7 +1,7 @@
 ﻿# ============================================================
-#  CSpect Launcher - frontend per i giochi ZX Spectrum Next
-#  Avvio: doppio clic su "Launcher.bat"
-#  Impostazioni in games.ini (creato al primo avvio)
+#  CSpect Launcher - front-end for ZX Spectrum Next games
+#  Start: double-click "Launcher.bat"
+#  Settings in games.ini (created on first run)
 #
 #  Copyright (c) 2026 Giuseppe Papa
 #  https://github.com/Saxabar/CSpectLauncher
@@ -18,37 +18,37 @@
 # ============================================================
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-Add-Type -AssemblyName Microsoft.VisualBasic     # per spostare i file nel Cestino
+Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle Bin
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
-# ---------- informazioni sul programma (finestra Info) ----------
+# ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.2'
+$AppVersion   = '1.3'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
-$AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # pagina per gli aggiornamenti
+$AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'
 
 $Root        = $PSScriptRoot
 $IniPath     = Join-Path $Root 'games.ini'
 $GameExts    = @('.nex', '.snx', '.sna')
-$OsExts      = @('.bas', '.tap')                    # avviati con NextZXOS (se non c'e' un .nex/.snx/.sna)
+$OsExts      = @('.bas', '.tap')                    # started with NextZXOS (when there is no .nex/.snx/.sna)
 $OsDirs      = @('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
-$OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # file di sistema e immagini SD create al volo
+$OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # system files and SD card images created on the fly
 $ImageExts   = @('.png', '.jpg', '.jpeg', '.gif', '.bmp')
 $DefaultArgs = '-w2 -vsync -zxnext -mmc=.\'
 
-# valori predefiniti, sovrascritti da [_default] in games.ini
+# default values, overridden by [_default] in games.ini
 $script:GamesDir       = Join-Path $Root 'GAMES'                # games=
 $script:Emulator       = Join-Path $Root 'CSpect\CSpect.exe'    # cspect=
 $script:GlobalArgs     = $DefaultArgs                           # args=
-$script:SdImageCfg     = ''                                     # nextzxos=  (vuoto = zxnext.sd nella cartella di CSpect)
+$script:SdImageCfg     = ''                                     # nextzxos=  (empty = zxnext.sd in the CSpect folder)
 $script:Lang           = 'en'                                   # lang=  (en, it, es, fr, de)
 $script:SortMode       = 'name'                                 # sort=  (name, rating)
 $script:ListWidth      = 368                                    # listwidth=
-$script:ShowHidden     = $false                                 # mostra anche i giochi nascosti (solo per la sessione)
+$script:ShowHidden     = $false                                 # also show hidden games (this session only)
 
 # ============================================================
-#  Traduzioni
+#  Translations
 # ============================================================
 $LangNames = [ordered]@{ en = 'English'; it = 'Italiano'; es = 'Español'; fr = 'Français'; de = 'Deutsch' }
 
@@ -285,7 +285,7 @@ $script:Strings = @{
   }
 }
 
-# testo tradotto; parametri opzionali per {0}, {1}...
+# translated text; optional arguments for {0}, {1}...
 function T([string]$key) {
     $s = $script:Strings[$script:Lang][$key]
     if (-not $s) { $s = $script:Strings['en'][$key] }
@@ -310,7 +310,7 @@ function Read-Ini([string]$path) {
     return $ini
 }
 
-# scrive un valore mantenendo il resto del file
+# writes one value, keeping the rest of the file
 function Set-IniValue([string]$section, [string]$key, [string]$value) {
     $lines = New-Object System.Collections.Generic.List[string]
     if (Test-Path -LiteralPath $IniPath) {
@@ -337,7 +337,7 @@ function Set-IniValue([string]$section, [string]$key, [string]$value) {
     [System.IO.File]::WriteAllText($IniPath, ([string]::Join("`r`n", $lines) + "`r`n"), $enc)
 }
 
-# crea games.ini al primo avvio
+# creates games.ini on first run
 function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$gargs) {
     if (-not $gargs) { $gargs = $DefaultArgs }
     $txt = @(
@@ -371,10 +371,10 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
     [System.IO.File]::WriteAllText($IniPath, $txt, $enc)
 }
 
-# toglie le sezioni dei giochi la cui cartella non esiste piu'
+# removes the sections of games whose folder no longer exists
 function Remove-OrphanSections([string[]]$existing) {
     if (-not (Test-Path -LiteralPath $IniPath)) { return }
-    if (-not $existing -or $existing.Count -eq 0) { return }   # cartella giochi vuota/irraggiungibile: non tocca nulla
+    if (-not $existing -or $existing.Count -eq 0) { return }   # games folder empty/unreachable: change nothing
     $names = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     foreach ($n in $existing) { [void]$names.Add($n) }
     [void]$names.Add('_default')
@@ -403,9 +403,9 @@ function Remove-OrphanSections([string[]]$existing) {
 }
 
 # ============================================================
-#  Percorsi
+#  Paths
 # ============================================================
-# cartella da impostazione (assoluta o relativa al launcher)
+# folder from a setting (absolute or relative to the launcher)
 function Resolve-Dir([string]$value, [string]$default) {
     $p = "$value".Trim().Trim('"')
     if (-not $p) { $p = $default }
@@ -413,7 +413,7 @@ function Resolve-Dir([string]$value, [string]$default) {
     return [System.IO.Path]::GetFullPath($p).TrimEnd('\')
 }
 
-# CSpect.exe da cspect= (cartella o .exe)
+# CSpect.exe from cspect= (folder or .exe)
 function Resolve-Emulator([string]$value) {
     $p = "$value".Trim().Trim('"')
     if (-not $p) { $p = 'CSpect' }
@@ -422,7 +422,7 @@ function Resolve-Emulator([string]$value) {
     return [System.IO.Path]::GetFullPath($p)
 }
 
-# se il percorso sta sotto la cartella del launcher lo salva come relativo (.\...)
+# paths inside the launcher folder are saved as relative (.\...)
 function To-IniPath([string]$path) {
     $rootT = $Root.TrimEnd('\')
     $p = $path.TrimEnd('\')
@@ -431,7 +431,7 @@ function To-IniPath([string]$path) {
     return $p
 }
 
-# legge [_default] e aggiorna le impostazioni; restituisce tutto l'ini
+# reads [_default] and updates the settings; returns the whole ini
 function Load-Settings {
     $ini = Read-Ini $IniPath
     $set = @{}
@@ -449,7 +449,7 @@ function Load-Settings {
 }
 
 # ============================================================
-#  Colori e caratteri
+#  Colours and fonts
 # ============================================================
 $cBack  = [System.Drawing.Color]::FromArgb(24, 24, 28)
 $cPanel = [System.Drawing.Color]::FromArgb(36, 36, 42)
@@ -460,7 +460,7 @@ $font   = New-Object System.Drawing.Font('Segoe UI', 10)
 $form   = $null
 
 # ============================================================
-#  Finestra impostazioni (anche al primo avvio)
+#  Settings window (also on first run)
 # ============================================================
 function Show-Settings([bool]$firstRun) {
     $dlg = New-Object System.Windows.Forms.Form
@@ -471,13 +471,13 @@ function Show-Settings([bool]$firstRun) {
     $linkColor = [System.Drawing.Color]::FromArgb(0, 200, 215)
     $openLink = { try { [System.Diagnostics.Process]::Start([string]$this.Tag) | Out-Null } catch {} }
 
-    # dai parametri generali separa grandezza finestra (-wN) e schermo intero (-fullscreen)
+    # split window size (-wN) and full screen (-fullscreen) from the general parameters
     $curSize = 0; $curFull = $false
     $rest = " $($script:GlobalArgs) "
     if ($rest -match '\s-w(\d+)(?=\s)') { $curSize = [int]$Matches[1] }
     if ($rest -match '\s-fullscreen(?=\s)') { $curFull = $true }
     $rest = ($rest -replace '\s-w\d+(?=\s)', ' ' -replace '\s-fullscreen(?=\s)', ' ' -replace '\s+', ' ').Trim()
-    if ($curSize -lt 1 -or $curSize -gt 4) { $curSize = 4 }    # CSpect: -w1..-w4, predefinito 4
+    if ($curSize -lt 1 -or $curSize -gt 4) { $curSize = 4 }    # CSpect: -w1..-w4, default 4
 
     $y = 15
     $lblWelcome = New-Object System.Windows.Forms.Label
@@ -485,7 +485,7 @@ function Show-Settings([bool]$firstRun) {
     $lblWelcome.ForeColor = $cGold
     if ($firstRun) { $dlg.Controls.Add($lblWelcome); $y += 52 }
 
-    # lingua
+    # language
     $lblLang = New-Object System.Windows.Forms.Label
     $lblLang.Location = New-Object System.Drawing.Point(15, ($y + 3)); $lblLang.Size = New-Object System.Drawing.Size(140, 22)
     $cmbLang = New-Object System.Windows.Forms.ComboBox
@@ -497,7 +497,7 @@ function Show-Settings([bool]$firstRun) {
     $cmbLang.SelectedIndex = [math]::Max(0, [array]::IndexOf($codes, $script:Lang))
     $y += 40
 
-    # cartella giochi
+    # games folder
     $lblGames = New-Object System.Windows.Forms.Label
     $lblGames.Location = New-Object System.Drawing.Point(15, ($y + 3)); $lblGames.Size = New-Object System.Drawing.Size(140, 22)
     $txtGames = New-Object System.Windows.Forms.TextBox
@@ -509,7 +509,7 @@ function Show-Settings([bool]$firstRun) {
     $btnGames.Location = New-Object System.Drawing.Point(530, ($y - 1)); $btnGames.Size = New-Object System.Drawing.Size(40, 27)
     $y += 40
 
-    # cartella CSpect
+    # CSpect folder
     $lblCs = New-Object System.Windows.Forms.Label
     $lblCs.Location = New-Object System.Drawing.Point(15, ($y + 3)); $lblCs.Size = New-Object System.Drawing.Size(140, 22)
     $txtCs = New-Object System.Windows.Forms.TextBox
@@ -526,7 +526,7 @@ function Show-Settings([bool]$firstRun) {
     $lnkDl.Add_LinkClicked($openLink)
     $y += 32
 
-    # grandezza finestra: 4 riquadri proporzionali (1x..4x)
+    # window size: 4 proportional boxes (1x..4x)
     $lblWin = New-Object System.Windows.Forms.Label
     $lblWin.Location = New-Object System.Drawing.Point(15, ($y + 3)); $lblWin.Size = New-Object System.Drawing.Size(140, 22)
     $script:SizeButtons = @()
@@ -550,7 +550,7 @@ function Show-Settings([bool]$firstRun) {
     $chkFull.Checked = $curFull
     $y += 74
 
-    # parametri CSpect generali
+    # general CSpect parameters
     $lblArgs = New-Object System.Windows.Forms.Label
     $lblArgs.Location = New-Object System.Drawing.Point(15, ($y + 3)); $lblArgs.Size = New-Object System.Drawing.Size(140, 22)
     $txtArgs = New-Object System.Windows.Forms.TextBox
@@ -560,7 +560,7 @@ function Show-Settings([bool]$firstRun) {
     $txtArgs.Text = $rest
     $y += 48
 
-    # informazioni: nome, versione, copyright, link
+    # information: name, version, copyright, links
     $sep = New-Object System.Windows.Forms.Label
     $sep.Location = New-Object System.Drawing.Point(15, $y); $sep.Size = New-Object System.Drawing.Size(555, 1)
     $sep.BackColor = $cPanel
@@ -595,7 +595,7 @@ function Show-Settings([bool]$firstRun) {
     $cancel.Location = New-Object System.Drawing.Point(475, $y); $cancel.Size = New-Object System.Drawing.Size(95, 32)
     $dlg.ClientSize = New-Object System.Drawing.Size(585, ($y + 47))
 
-    # testi nella lingua scelta (si aggiornano cambiando lingua)
+    # texts in the chosen language (updated when the language changes)
     $applyTexts = {
         $dlg.Text = T 'setTitle'
         $lblWelcome.Text = T 'welcome'
@@ -648,7 +648,7 @@ function Show-Settings([bool]$firstRun) {
     $lang   = $codes[$cmbLang.SelectedIndex]
     $games  = To-IniPath (Resolve-Dir $txtGames.Text 'GAMES')
     $cspect = To-IniPath (Split-Path (Resolve-Emulator $txtCs.Text) -Parent)
-    # ricompone i parametri: -wN + altri parametri + -fullscreen
+    # rebuilds the parameters: -wN + other parameters + -fullscreen
     $size = 4
     foreach ($rb in $script:SizeButtons) { if ($rb.Checked) { $size = [int]$rb.Tag } }
     $other = (" " + $txtArgs.Text + " ") -replace '\s-w\d+(?=\s)', ' ' -replace '\s-fullscreen(?=\s)', ' '
@@ -673,8 +673,8 @@ function Show-Settings([bool]$firstRun) {
     return $true
 }
 
-# finestra con una casella di testo (rinomina, parametri del singolo gioco)
-# restituisce il testo, oppure $null se annullata
+# window with a text box (rename, parameters of a single game)
+# returns the text, or $null if cancelled
 function Show-InputBox([string]$title, [string]$label, [string]$value, [bool]$mono) {
     $dlg = New-Object System.Windows.Forms.Form
     $dlg.Text = $title
@@ -707,10 +707,10 @@ function Show-InputBox([string]$title, [string]$label, [string]$value, [bool]$mo
 }
 
 # ============================================================
-#  Giochi
+#  Games
 # ============================================================
-# eseguibili nella cartella del gioco e nelle sottocartelle (percorsi relativi);
-# i .bas/.tap (avviati con NextZXOS) solo se non c'e' nessun .nex/.snx/.sna
+# executables in the game folder and its subfolders (relative paths);
+# .bas/.tap files (started with NextZXOS) only when there is no .nex/.snx/.sna
 function Get-Candidates([string]$folder) {
     $base = $folder.TrimEnd('\', '/')
     $files = @(Get-ChildItem -LiteralPath $folder -File -Recurse -ErrorAction SilentlyContinue)
@@ -722,7 +722,7 @@ function Get-Candidates([string]$folder) {
     }
 }
 
-# finestra di scelta dell'eseguibile
+# window to choose the executable
 function Select-Executable($game) {
     $dlg = New-Object System.Windows.Forms.Form
     $dlg.Text = T 'chooseTitle' $game.Title
@@ -769,7 +769,7 @@ function Select-Executable($game) {
     return $true
 }
 
-# testo nella lista (titolo + stelline)
+# text in the list (title + stars)
 $StarFull  = [string][char]0x2605
 $StarEmpty = [string][char]0x2606
 function Update-Display($g) {
@@ -780,7 +780,7 @@ function Update-Display($g) {
     $g.Display = $d
 }
 
-# se CSpect non c'e', fa scegliere la cartella e la salva in games.ini
+# if CSpect is missing, lets the user pick the folder and saves it in games.ini
 function Find-Emulator {
     if (Test-Path -LiteralPath $script:Emulator) { return $true }
     $r = [System.Windows.Forms.MessageBox]::Show((T 'emuNotFound' $script:Emulator), 'CSpect Launcher', 'YesNo', 'Warning')
@@ -800,9 +800,12 @@ function Find-Emulator {
     return $false
 }
 
-# immagine del gioco
-# priorita': image= > <nome eseguibile>*.png piu' recente (screenshot F5 di CSpect) > cover/copertina.*
-# > altri screenshot CSpect > screen*/title* > prima immagine della cartella
+# picture of the game
+# priority: image= > latest CSpect F5 screenshot of the game (<executable name>*.png, or
+# screenshot_<date>.png for .bas/.tap games started with NextZXOS) > cover/copertina.*
+# > latest other CSpect screenshot > screen*/title* > first picture in the folder
+# CSpect names screenshots <name>_<year>_<month>_<day>___<hour>_<min>_<sec>, without leading zeros
+$ShotRe = '_\d{4}_\d{1,2}_\d{1,2}___\d{1,2}_\d{1,2}_\d{1,2}$'
 function Find-Image([string]$folder, [string]$imageCfg, [string]$gameFile) {
     if ($imageCfg) {
         $p = Join-Path $folder $imageCfg
@@ -820,11 +823,12 @@ function Find-Image([string]$folder, [string]$imageCfg, [string]$gameFile) {
     $c = $null
     if ($gameFile) {
         $exeBase = [System.IO.Path]::GetFileNameWithoutExtension($gameFile)
-        $c = $shots | Where-Object { $_.Extension -ieq '.png' -and $_.BaseName.StartsWith($exeBase, [StringComparison]::OrdinalIgnoreCase) } |
+        $c = $shots | Where-Object { $_.Extension -ieq '.png' -and
+                ($_.BaseName.StartsWith($exeBase, [StringComparison]::OrdinalIgnoreCase) -or $_.BaseName -match "^screenshot$ShotRe") } |
              Sort-Object LastWriteTime -Descending | Select-Object -First 1
     }
     if (-not $c) { $c = $imgs | Where-Object { $_.BaseName -match '^(cover|copertina)' } | Select-Object -First 1 }
-    if (-not $c) { $c = $imgs | Where-Object { $_.BaseName -match '_\d{4}_\d{2}_\d{2}___\d{2}_\d{2}_\d{2}$' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1 }
+    if (-not $c) { $c = $imgs | Where-Object { $_.BaseName -match $ShotRe } | Sort-Object LastWriteTime -Descending | Select-Object -First 1 }
     if (-not $c) { $c = $imgs | Where-Object { $_.BaseName -match '^(screen|screenshot|title)' } | Select-Object -First 1 }
     if (-not $c) { $c = $imgs | Select-Object -First 1 }
     if (-not $c) { $c = $shots | Select-Object -First 1 }
@@ -832,7 +836,7 @@ function Find-Image([string]$folder, [string]$imageCfg, [string]$gameFile) {
     return $c.FullName
 }
 
-# scansione della cartella giochi
+# scan of the games folder
 function Get-Games {
     $ini = Load-Settings
     $list = New-Object System.Collections.ArrayList
@@ -840,10 +844,10 @@ function Get-Games {
 
     $dirs = @(Get-ChildItem -LiteralPath $script:GamesDir -Directory | Sort-Object Name)
 
-    # cartelle sparite: via le loro impostazioni
+    # folders that disappeared: remove their settings
     try { Remove-OrphanSections @($dirs | ForEach-Object { $_.Name }) } catch {}
 
-    # giochi nuovi: aggiunti all'ini (file= solo se c'e' un unico eseguibile)
+    # new games: added to the ini (file= only when there is a single executable)
     $toAdd = ''
     foreach ($dir in $dirs) {
         if ($ini.ContainsKey($dir.Name)) { continue }
@@ -903,12 +907,12 @@ function Get-Games {
 }
 
 # ============================================================
-#  NextZXOS: avvio dei file .bas e .tap
-#  CSpect non li apre direttamente: si crea al volo una piccola immagine SD con
-#  i file di NextZXOS (presi dall'immagine dell'utente, es. zxnext.sd), il gioco
-#  in c:/GAME e un autoexec.bas che lo carica all'accensione
+#  NextZXOS: starting .bas and .tap files
+#  CSpect cannot open them directly: a small SD card image is created on the fly
+#  with the NextZXOS files (taken from the user's image, e.g. zxnext.sd), the game
+#  in c:/GAME and an autoexec.bas that loads it at power on
 # ============================================================
-# lettura (solo lettura) di un'immagine SD FAT32, con o senza tabella delle partizioni
+# read-only access to a FAT32 SD card image, with or without a partition table
 Add-Type -TypeDefinition @'
 using System;
 using System.Collections.Generic;
@@ -1026,7 +1030,7 @@ public static class NextFat {
 }
 '@
 
-# immagine SD con NextZXOS da nextzxos= (vuoto = zxnext.sd nella cartella di CSpect)
+# SD card image with NextZXOS from nextzxos= (empty = zxnext.sd in the CSpect folder)
 function Resolve-SdImage([string]$value) {
     $p = "$value".Trim().Trim('"')
     if (-not $p) { return Join-Path (Split-Path $script:Emulator -Parent) 'zxnext.sd' }
@@ -1034,14 +1038,14 @@ function Resolve-SdImage([string]$value) {
     return [System.IO.Path]::GetFullPath($p)
 }
 
-# finestra di attesa mentre ZXOS.bat scarica l'immagine (CSpect intanto resta nero):
-# si chiude da sola quando CSpect viene chiuso; $true se l'immagine c'e'
+# waiting window while ZXOS.bat downloads the image (CSpect stays black meanwhile):
+# closes by itself when CSpect is closed; $true if the image is there
 function Wait-ZxosDownload($proc, [string]$img) {
     $dlg = New-Object System.Windows.Forms.Form
     $dlg.Text = T 'osDlTitle'
     $dlg.StartPosition = $(if ($form) { 'CenterParent' } else { 'CenterScreen' })
     $dlg.FormBorderStyle = 'FixedDialog'; $dlg.MaximizeBox = $false; $dlg.MinimizeBox = $false
-    $dlg.BackColor = $cBack; $dlg.ForeColor = $cText; $dlg.Font = $font   # non TopMost: coprirebbe la domanda di CSpect
+    $dlg.BackColor = $cBack; $dlg.ForeColor = $cText; $dlg.Font = $font   # not TopMost: it would cover CSpect's question
     if ($form -and $form.Icon) { $dlg.Icon = $form.Icon }
     $lbl = New-Object System.Windows.Forms.Label
     $lbl.Text = T 'osDlWait'
@@ -1075,14 +1079,14 @@ function Wait-ZxosDownload($proc, [string]$img) {
     $dlg.Add_Shown({ $timer.Start() })
     $res = if ($form) { $dlg.ShowDialog($form) } else { $dlg.ShowDialog() }
     $timer.Stop(); $timer.Dispose(); $dlg.Dispose()
-    if ($res -ne 'OK') { return $false }        # Annulla: CSpect resta aperto, nessun avvio
+    if ($res -ne 'OK') { return $false }        # Cancel: CSpect stays open, nothing is started
     if (Test-Path -LiteralPath $img) { return $true }
     [System.Windows.Forms.MessageBox]::Show((T 'osDlFail' $img), $AppName, 'OK', 'Warning') | Out-Null
     return $false
 }
 
-# se l'immagine SD non c'e': la fa scaricare con ZXOS.bat di CSpect (scarica zxnext.sd
-# nella cartella di CSpect se manca), oppure la fa scegliere e la salva in games.ini
+# if the SD card image is missing: offers to download it with CSpect's ZXOS.bat (which downloads
+# zxnext.sd into the CSpect folder when missing), or lets the user pick it and saves it in games.ini
 function Find-SdImage {
     $img = Resolve-SdImage $script:SdImageCfg
     if (Test-Path -LiteralPath $img -PathType Leaf) { return $img }
@@ -1093,7 +1097,7 @@ function Find-SdImage {
         if ($r -eq 'Yes') {
             $psi = New-Object System.Diagnostics.ProcessStartInfo
             $psi.FileName = $env:ComSpec
-            $psi.Arguments = '/c ""' + $zxos + '""'    # percorso completo: cmd toglie le virgolette esterne
+            $psi.Arguments = '/c ""' + $zxos + '""'    # full path: cmd removes the outer quotes
             $psi.WorkingDirectory = $csDir
             $psi.UseShellExecute = $false
             try { $proc = [System.Diagnostics.Process]::Start($psi) } catch {
@@ -1118,7 +1122,7 @@ function Find-SdImage {
     return $fd.FileName
 }
 
-# esegue hdfmonkey (incluso in CSpect) senza finestra; errore se non riesce
+# runs hdfmonkey (included with CSpect) without a window; throws an error if it fails
 function Invoke-Hdfmonkey([string[]]$hArgs) {
     $exe = Join-Path (Split-Path $script:Emulator -Parent) 'hdfmonkey\windows-64\hdfmonkey.exe'
     if (-not (Test-Path -LiteralPath $exe)) { throw (T 'osNoTool' $exe) }
@@ -1133,7 +1137,7 @@ function Invoke-Hdfmonkey([string[]]$hArgs) {
     if ($p.ExitCode -ne 0) { throw "hdfmonkey $($hArgs[0]): $($out.Trim())" }
 }
 
-# file di sistema di NextZXOS copiati dall'immagine SD (una volta sola, finche' l'immagine non cambia)
+# NextZXOS system files copied from the SD card image (once, until the image changes)
 function Update-OsFiles([string]$sdImage) {
     $dir = Join-Path $OsWork 'nextzxos'
     $stampFile = Join-Path $OsWork 'nextzxos.txt'
@@ -1148,19 +1152,19 @@ function Update-OsFiles([string]$sdImage) {
         if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
         throw ((T 'osBadImage' $sdImage) + "`n$msg")
     }
-    # niente autoexec dell'utente o di benvenuto: c'e' quello del gioco
+    # no user or welcome autoexec: the game's one is added
     Get-ChildItem -LiteralPath (Join-Path $dir 'NEXTZXOS') -File | Where-Object { $_.Name -like 'autoexec.*' } |
         Remove-Item -Force
     [System.IO.File]::WriteAllText($stampFile, $stamp)
     return $dir
 }
 
-# autoexec.bas (formato +3DOS): va in c:/GAME e carica il gioco
-#   .bas:  .cd /game  -  LOAD "nome.bas"
-#   .tap:  .cd /game  -  .run nome.tap (monta il nastro)  -  LOAD "t:": LOAD ""
+# autoexec.bas (+3DOS format): goes to c:/GAME and loads the game
+#   .bas:  .cd /game  -  LOAD "name.bas"
+#   .tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
 function New-Autoexec([string]$fileName, [bool]$isTap) {
     $enc = [System.Text.Encoding]::GetEncoding(28591)
-    $load = [byte]0xEF                      # token LOAD
+    $load = [byte]0xEF                      # LOAD token
     $lines = @(, $enc.GetBytes('.cd /game'))
     if ($isTap) {
         $lines += , $enc.GetBytes(".run $fileName")
@@ -1181,9 +1185,9 @@ function New-Autoexec([string]$fileName, [bool]$isTap) {
     [System.Text.Encoding]::ASCII.GetBytes('PLUS3DOS').CopyTo($h, 0)
     $h[8] = 0x1A; $h[9] = 1; $h[10] = 0
     [BitConverter]::GetBytes([uint32](128 + $prog.Count)).CopyTo($h, 11)
-    $h[15] = 0                                                       # programma BASIC
+    $h[15] = 0                                                       # BASIC program
     [BitConverter]::GetBytes([uint16]$prog.Count).CopyTo($h, 16)
-    [BitConverter]::GetBytes([uint16]10).CopyTo($h, 18)              # parte dalla riga 10
+    [BitConverter]::GetBytes([uint16]10).CopyTo($h, 18)              # starts at line 10
     [BitConverter]::GetBytes([uint16]$prog.Count).CopyTo($h, 20)
     $sum = 0
     for ($i = 0; $i -lt 127; $i++) { $sum += $h[$i] }
@@ -1191,7 +1195,7 @@ function New-Autoexec([string]$fileName, [bool]$isTap) {
     return [byte[]]($h + $prog.ToArray())
 }
 
-# crea l'immagine SD del gioco; restituisce il percorso, $null se annullato
+# creates the SD card image of the game; returns its path, $null if cancelled
 function New-OsImage($game) {
     $sd = Find-SdImage
     if (-not $sd) { return $null }
@@ -1199,11 +1203,11 @@ function New-OsImage($game) {
     $isTap = [System.IO.Path]::GetExtension($game.File) -ieq '.tap'
     $exeDir = [System.IO.Path]::GetDirectoryName($game.File)
     $name = [System.IO.Path]::GetFileName($game.File)
-    # alcuni .tap caricano altri file dalla loro cartella: si copia tutta la cartella
+    # some .tap files load other files from their folder: the whole folder is copied
     $size = (Get-ChildItem -LiteralPath $exeDir -File -Recurse | Measure-Object Length -Sum).Sum
     $mb = [math]::Max(64, [math]::Ceiling($size * 1.25 / 1MB) + 32)
     $img = Join-Path $OsWork (($game.Section -replace '[^\w\-]', '_') + '.img')
-    # immagini degli avvii precedenti: via (quelle di un CSpect ancora aperto sono bloccate e restano)
+    # images of previous launches are removed (those of a CSpect still running are locked and stay)
     Get-ChildItem -LiteralPath $OsWork -Filter '*.img' -File -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -ne $img } |
         ForEach-Object { try { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop } catch {} }
@@ -1212,7 +1216,7 @@ function New-OsImage($game) {
     Invoke-Hdfmonkey @('putdir', $img, $sys, '/')
     Invoke-Hdfmonkey @('mkdir', $img, '/GAME')
     Invoke-Hdfmonkey @('putdir', $img, $exeDir, '/GAME')
-    # .run non accetta nomi con spazi o simboli: in quel caso una copia come GAME.TAP
+    # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
     if ($isTap -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
         Invoke-Hdfmonkey @('put', $img, $game.File, '/GAME/GAME.TAP')
         $name = 'GAME.TAP'
@@ -1223,7 +1227,7 @@ function New-OsImage($game) {
     return $img
 }
 
-# avvio di un gioco
+# starting a game
 function Start-Game($game) {
     if (-not $game) { return }
     if (-not $game.File -and $game.Candidates.Count -gt 1) {
@@ -1239,7 +1243,7 @@ function Start-Game($game) {
     $psi.FileName         = $script:Emulator
     $psi.UseShellExecute  = $false
     if ($OsExts -contains [System.IO.Path]::GetExtension($game.File).ToLower()) {
-        # .bas / .tap: CSpect parte con l'immagine NextZXOS creata al volo (-mmc= non serve)
+        # .bas / .tap: CSpect starts with the NextZXOS image created on the fly (-mmc= not needed)
         $status.Text = T 'osPrep' $game.Title
         $form.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
         $form.Refresh()
@@ -1253,11 +1257,11 @@ function Start-Game($game) {
         if (-not $img) { $status.Text = ''; return }
         $osArgs = (" $($game.Args) " -replace '\s-mmc=("[^"]*"|\S*)', ' ').Trim()
         $psi.Arguments        = "$osArgs `"$img`""
-        # come per gli altri giochi: gli screenshot F5 finiscono accanto al gioco
+        # as for the other games: F5 screenshots end up next to the game
         $psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($game.File)
     } else {
-        # cartella di lavoro = cartella dell'eseguibile: -mmc=.\ punta li',
-        # salvataggi e screenshot finiscono accanto al gioco
+        # working folder = folder of the executable: -mmc=.\ points there,
+        # save files and screenshots end up next to the game
         $rel = '.\' + [System.IO.Path]::GetFileName($game.File)
         $psi.Arguments        = "$($game.Args) `"$rel`""
         $psi.WorkingDirectory = [System.IO.Path]::GetDirectoryName($game.File)
@@ -1270,7 +1274,7 @@ function Start-Game($game) {
     }
 }
 
-# file di salvataggio .sav del gioco (cartella del gioco e sottocartelle)
+# .sav save files of the game (game folder and subfolders)
 function Get-SaveFiles($game) {
     Get-ChildItem -LiteralPath $game.Folder -File -Recurse -ErrorAction SilentlyContinue |
         Where-Object { $_.Extension -ieq '.sav' } | Sort-Object FullName
@@ -1285,7 +1289,7 @@ function Load-ImageNoLock([string]$path) {
 }
 
 # ============================================================
-#  Primo avvio: senza games.ini chiede lingua e cartelle
+#  First run: without games.ini asks for language and folders
 # ============================================================
 if (-not (Test-Path -LiteralPath $IniPath)) {
     if (-not (Show-Settings $true)) { return }
@@ -1294,7 +1298,7 @@ if (-not (Test-Path -LiteralPath $IniPath)) {
 }
 
 # ============================================================
-#  Interfaccia
+#  User interface
 # ============================================================
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'CSpect Launcher - ZX Spectrum Next'
@@ -1306,7 +1310,7 @@ $form.ForeColor = $cText
 $form.Font = $font
 $form.KeyPreview = $true
 
-# striscia colorata stile Spectrum
+# Spectrum-style coloured stripe
 $stripe = New-Object System.Windows.Forms.Panel
 $stripe.Dock = 'Top'; $stripe.Height = 6
 $stripe.Add_Paint({
@@ -1319,7 +1323,7 @@ $stripe.Add_Paint({
     }
 })
 
-# pannello sinistro: ricerca, ordinamento, lista
+# left panel: search, sorting, list
 $left = New-Object System.Windows.Forms.Panel
 $left.Dock = 'Left'; $left.Width = 368; $left.Padding = New-Object System.Windows.Forms.Padding(10)
 
@@ -1356,7 +1360,7 @@ $lst.DisplayMember = 'Display'
 
 $left.Controls.Add($lst); $left.Controls.Add($spacer); $left.Controls.Add($searchRow); $left.Controls.Add($labelRow)
 
-# pannello destro: titolo + stelline, immagine, file + pulsante
+# right panel: title + stars, picture, file + button
 $right = New-Object System.Windows.Forms.Panel
 $right.Dock = 'Fill'; $right.Padding = New-Object System.Windows.Forms.Padding(10)
 
@@ -1385,7 +1389,7 @@ $bottom.Add_Resize({
     $lblFile.Width = [math]::Max(50, $bottom.Width - $btnPlay.Width - 15)
 })
 
-# stelline del voto (clic = imposta, clic sulla stessa stella = azzera)
+# rating stars (click = set, click on the same star = clear)
 $starsPanel = New-Object System.Windows.Forms.FlowLayoutPanel
 $starsPanel.Dock = 'Right'; $starsPanel.WrapContents = $false
 $starFont = New-Object System.Drawing.Font('Segoe UI Symbol', 22)
@@ -1416,7 +1420,7 @@ $titleRow.Controls.Add($lblTitle); $titleRow.Controls.Add($starsPanel)
 
 $right.Controls.Add($pic); $right.Controls.Add($bottom); $right.Controls.Add($titleRow)
 
-# barra di stato con pulsante Impostazioni a destra
+# status bar with the Settings button on the right
 $statusStrip = New-Object System.Windows.Forms.StatusStrip
 $statusStrip.BackColor = $cPanel; $statusStrip.SizingGrip = $false
 $status = New-Object System.Windows.Forms.ToolStripStatusLabel
@@ -1426,7 +1430,7 @@ $btnSettings.ForeColor = $cText
 [void]$statusStrip.Items.Add($status)
 [void]$statusStrip.Items.Add($btnSettings)
 
-# divisore trascinabile tra lista e dettagli (larghezza salvata in listwidth=)
+# draggable divider between list and details (width saved in listwidth=)
 $splitter = New-Object System.Windows.Forms.Splitter
 $splitter.Dock = 'Left'; $splitter.Width = 5; $splitter.MinSize = 200; $splitter.MinExtra = 300
 $splitter.BackColor = $cPanel
@@ -1437,7 +1441,7 @@ $splitter.Add_SplitterMoved({
 
 $form.Controls.Add($right); $form.Controls.Add($splitter); $form.Controls.Add($left); $form.Controls.Add($stripe); $form.Controls.Add($statusStrip)
 
-# menu del clic destro
+# right-click menu
 $menu = New-Object System.Windows.Forms.ContextMenuStrip
 $miChoose     = $menu.Items.Add('')
 $miArgs       = $menu.Items.Add('')
@@ -1451,9 +1455,9 @@ $miShowHidden.CheckOnClick = $true
 $lst.ContextMenuStrip = $menu
 
 # ============================================================
-#  Logica
+#  Logic
 # ============================================================
-# testi dell'interfaccia nella lingua corrente
+# interface texts in the current language
 function Apply-Language {
     $lblFilter.Text = T 'search'
     $lblSortT.Text  = T 'sortLbl'
@@ -1498,7 +1502,7 @@ function Refresh-List {
     $status.Text = T 'status' $lst.Items.Count $script:AllGames.Count
 }
 
-# ricarica tutto (giochi, impostazioni, testi)
+# reloads everything (games, settings, texts)
 function Reload-All {
     $script:AllGames = Get-Games
     Apply-Language
@@ -1510,7 +1514,7 @@ function Reload-All {
     Refresh-List
 }
 
-# stelline: $hover = stella sotto il mouse, altrimenti il voto salvato
+# stars: $hover = star under the mouse, otherwise the saved rating
 function Paint-Stars($hover) {
     $g = $lst.SelectedItem
     $starsPanel.Visible = [bool]$g
@@ -1527,7 +1531,7 @@ function Paint-Stars($hover) {
 function Set-Rating([int]$n) {
     $g = $lst.SelectedItem
     if (-not $g) { return }
-    if ($g.Rating -eq $n) { $n = 0 }          # clic sulla stessa stella = toglie il voto
+    if ($g.Rating -eq $n) { $n = 0 }          # click on the same star = removes the rating
     $g.Rating = $n
     try { Set-IniValue $g.Section 'rating' $(if ($n -gt 0) { "$n" } else { '' }) } catch {
         [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), 'CSpect Launcher', 'OK', 'Warning') | Out-Null
@@ -1564,7 +1568,7 @@ function Show-Game($g) {
     if ($g.Image) { $pic.Image = Load-ImageNoLock $g.Image }
 }
 
-# ---------- eventi ----------
+# ---------- events ----------
 $lst.Add_SelectedIndexChanged({ Show-Game $lst.SelectedItem })
 $lst.Add_DoubleClick({ Start-Game $lst.SelectedItem })
 $lst.Add_MouseDown({
@@ -1589,7 +1593,7 @@ $menu.Add_Opening({
     $miShowHidden.Checked = $script:ShowHidden
 })
 
-# parametri di avvio del singolo gioco (args= nella sua sezione; vuoto = parametri generali)
+# launch parameters of a single game (args= in its section; empty = general parameters)
 $miArgs.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1603,7 +1607,7 @@ $miArgs.Add_Click({
     Show-Game $g
 })
 
-# rinomina il titolo mostrato (title= nella sua sezione; vuoto = nome della cartella)
+# renames the title shown (title= in its section; empty = folder name)
 $miRename.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1620,7 +1624,7 @@ $miRename.Add_Click({
     Refresh-List
 })
 
-# nascondi / mostra di nuovo il singolo gioco (hidden=1 in games.ini)
+# hide / show again a single game (hidden=1 in games.ini)
 $miHide.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1632,13 +1636,13 @@ $miHide.Add_Click({
     Refresh-List
 })
 
-# mostra/nasconde nella lista i giochi nascosti (per poterli ripristinare)
+# shows/hides the hidden games in the list (so they can be restored)
 $miShowHidden.Add_CheckedChanged({
     $script:ShowHidden = $miShowHidden.Checked
     Refresh-List
 })
 
-# elimina i salvataggi .sav del gioco (nel Cestino, dopo conferma)
+# deletes the game's .sav files (to the Recycle Bin, after confirmation)
 $miDelSav.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1692,7 +1696,7 @@ $form.Add_KeyDown({
         $k = [int]$e.KeyCode
         $n = -1
         if ($k -ge 48 -and $k -le 53)  { $n = $k - 48 }    # Ctrl+0..5
-        if ($k -ge 96 -and $k -le 101) { $n = $k - 96 }    # Ctrl+tastierino 0..5
+        if ($k -ge 96 -and $k -le 101) { $n = $k - 96 }    # Ctrl+numpad 0..5
         if ($n -ge 0) {
             $g = $lst.SelectedItem
             if ($g) { $g.Rating = 0; Set-Rating $n }
@@ -1707,7 +1711,7 @@ $form.Add_KeyDown({
     }
 })
 
-# tornando al launcher (es. dopo uno screenshot con F5 in CSpect) aggiorna l'immagine
+# back in the launcher (e.g. after an F5 screenshot in CSpect): updates the picture
 $form.Add_Activated({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -1715,7 +1719,7 @@ $form.Add_Activated({
     if ($new -ne $g.Image) { $g.Image = $new; Show-Game $g }
 })
 
-# ---------- avvio ----------
+# ---------- start ----------
 $script:AllGames = Get-Games
 Apply-Language
 $script:SortChanging = $true

@@ -3,6 +3,10 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## 1.3
+
+- Experimental macOS support in the Linux version (start with cspect-launcher.command; not yet tested on a Mac)
+
 ## 1.2
 
 - .bas/.tap games: F5 screenshots are saved next to the game (they ended up in the temporary folder)

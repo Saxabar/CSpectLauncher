@@ -1,15 +1,15 @@
 # CSpect Launcher
 
 A game launcher for the ZX Spectrum Next emulator **CSpect**.
-Version 1.2 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
+Version 1.3 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 
-CSpect Launcher is a simple Windows and Linux front-end that lists the ZX Spectrum Next games in a folder and starts them in the CSpect emulator with one click. You can rate games, add cover pictures, hide games you do not want to see, set custom launch parameters per game and much more.
+CSpect Launcher is a simple Windows, Linux and macOS front-end that lists the ZX Spectrum Next games in a folder and starts them in the CSpect emulator with one click. You can rate games, add cover pictures, hide games you do not want to see, set custom launch parameters per game and much more.
 
 The interface is available in **English, Italian, Spanish, French and German**.
 
-> 🐧 **Linux version:** a Linux version with the same features is available in the [`linux`](linux/) folder — see the [Linux README](linux/README.md). Both versions use the same `games.ini` file.
+> 🐧🍎 **Linux and macOS version:** a version with the same features for Linux and macOS (macOS support is experimental) is available in the [`linux`](linux/) folder and as the `CSpectLauncher-Linux-macOS` package in the [Releases](https://github.com/Saxabar/CSpectLauncher/releases) — see the [Linux / macOS README](linux/README.md). All versions use the same `games.ini` file.
 
 ## Features
 
@@ -22,10 +22,11 @@ The interface is available in **English, Italian, Spanish, French and German**.
 - Delete a game's save files (moved to the Recycle Bin)
 - Settings for language, folders, window size (1x–4x) and full screen
 - Everything stored in a plain `games.ini` file
+- Versions for Windows, Linux and macOS (experimental)
 
 ## Requirements
 
-The instructions below are for the **Windows** version. For Linux see the [Linux README](linux/README.md).
+The instructions below are for the **Windows** version. For Linux and macOS see the [Linux / macOS README](linux/README.md).
 
 - Windows with Windows PowerShell (already included in Windows 10 and 11)
 - The CSpect emulator by Mike Dailly: <https://mdf200.itch.io/cspect>
@@ -113,10 +114,13 @@ While playing, press **F5** in CSpect to take a screenshot: it is saved in the g
 Picture priority:
 
 1. `image=` in `games.ini`
-2. the latest CSpect screenshot of the executable (`<name>_<date>.png`)
+2. the latest CSpect screenshot of the executable (`<name>_<date>.png`, or `screenshot_<date>.png` for `.bas` / `.tap` games)
 3. `cover.*` / `copertina.*`
-4. `screen*` / `title*`
-5. the first picture found in the folder
+4. the latest other CSpect screenshot in the folder
+5. `screen*` / `title*`
+6. the first picture found in the folder
+
+If you take several screenshots, the most recent one is used.
 
 ### Right-click menu (on a game)
 

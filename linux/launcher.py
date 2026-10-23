@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ============================================================
-#  CSpect Launcher for Linux
+#  CSpect Launcher for Linux and macOS
 #  Game launcher for the ZX Spectrum Next emulator CSpect
 #
 #  Copyright (c) 2026 Giuseppe Papa
@@ -48,12 +48,16 @@ except Exception:
 
 # ---------- program information ----------
 APP_NAME = 'CSpect Launcher'
-APP_VERSION = '1.2'
+APP_VERSION = '1.3'
 APP_COPYRIGHT = '(c) 2026 Giuseppe Papa - GPL-3.0'
 APP_URL = 'https://github.com/Saxabar/CSpectLauncher'
 CSPECT_URL = 'https://mdf200.itch.io/cspect'
 
 IS_WIN = (os.name == 'nt')
+IS_MAC = (sys.platform == 'darwin')
+# where Mono is installed on macOS (not always in PATH when started from the Finder)
+MAC_MONO = ('/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono',
+            '/opt/homebrew/bin/mono', '/usr/local/bin/mono')
 ROOT = os.path.dirname(os.path.abspath(__file__))
 INI_PATH = os.path.join(ROOT, 'games.ini')
 GAME_EXTS = ('.nex', '.snx', '.sna')
@@ -64,7 +68,8 @@ OS_WORK = (os.path.join(os.environ.get('TEMP', ''), 'CSpectLauncher') if IS_WIN 
            os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'cspect-launcher'))
 IMAGE_EXTS = ('.png', '.jpg', '.jpeg', '.gif', '.bmp')
 DEFAULT_ARGS = '-w2 -vsync -zxnext -mmc=./'
-SHOT_RE = re.compile(r'_\d{4}_\d{2}_\d{2}___\d{2}_\d{2}_\d{2}$')
+# CSpect names screenshots <name>_<year>_<month>_<day>___<hour>_<min>_<sec>, without leading zeros
+SHOT_RE = re.compile(r'_\d{4}_\d{1,2}_\d{1,2}___\d{1,2}_\d{1,2}_\d{1,2}$')
 
 # colours and fonts (same look as the Windows version)
 C_BACK = '#18181c'
@@ -155,7 +160,8 @@ STRINGS = {
         "setCSpect": "CSpect folder:",
         "gamesPick": "Select the folder containing the games (one subfolder per game)",
         "gamesMissing": "The games folder does not exist.",
-        "monoMissing": "Mono is needed to run CSpect on Linux, but it was not found.\n\nInstall it, for example on Ubuntu/Debian:\nsudo apt install mono-devel"
+        "monoMissing": "Mono is needed to run CSpect on Linux, but it was not found.\n\nInstall it, for example on Ubuntu/Debian:\nsudo apt install mono-devel",
+        "monoMissingMac": "Mono is needed to run CSpect on macOS, but it was not found.\n\nInstall it from:\nhttps://www.mono-project.com/download/stable/"
     },
     "it": {
         "argsMenu": "Parametri di avvio...",
@@ -228,7 +234,8 @@ STRINGS = {
         "setCSpect": "Cartella CSpect:",
         "gamesPick": "Seleziona la cartella che contiene i giochi (una sottocartella per gioco)",
         "gamesMissing": "La cartella dei giochi non esiste.",
-        "monoMissing": "Per avviare CSpect su Linux serve Mono, ma non è stato trovato.\n\nInstallalo, per esempio su Ubuntu/Debian:\nsudo apt install mono-devel"
+        "monoMissing": "Per avviare CSpect su Linux serve Mono, ma non è stato trovato.\n\nInstallalo, per esempio su Ubuntu/Debian:\nsudo apt install mono-devel",
+        "monoMissingMac": "Per avviare CSpect su macOS serve Mono, ma non è stato trovato.\n\nInstallalo da:\nhttps://www.mono-project.com/download/stable/"
     },
     "es": {
         "argsMenu": "Parámetros de inicio...",
@@ -301,7 +308,8 @@ STRINGS = {
         "setCSpect": "Carpeta de CSpect:",
         "gamesPick": "Selecciona la carpeta que contiene los juegos (una subcarpeta por juego)",
         "gamesMissing": "La carpeta de juegos no existe.",
-        "monoMissing": "Para ejecutar CSpect en Linux se necesita Mono, pero no se encontró.\n\nInstálalo, por ejemplo en Ubuntu/Debian:\nsudo apt install mono-devel"
+        "monoMissing": "Para ejecutar CSpect en Linux se necesita Mono, pero no se encontró.\n\nInstálalo, por ejemplo en Ubuntu/Debian:\nsudo apt install mono-devel",
+        "monoMissingMac": "Para ejecutar CSpect en macOS se necesita Mono, pero no se encontró.\n\nInstálalo desde:\nhttps://www.mono-project.com/download/stable/"
     },
     "fr": {
         "argsMenu": "Paramètres de lancement...",
@@ -374,7 +382,8 @@ STRINGS = {
         "setCSpect": "Dossier de CSpect :",
         "gamesPick": "Sélectionnez le dossier contenant les jeux (un sous-dossier par jeu)",
         "gamesMissing": "Le dossier des jeux n'existe pas.",
-        "monoMissing": "Mono est nécessaire pour lancer CSpect sous Linux, mais il est introuvable.\n\nInstallez-le, par exemple sous Ubuntu/Debian :\nsudo apt install mono-devel"
+        "monoMissing": "Mono est nécessaire pour lancer CSpect sous Linux, mais il est introuvable.\n\nInstallez-le, par exemple sous Ubuntu/Debian :\nsudo apt install mono-devel",
+        "monoMissingMac": "Mono est nécessaire pour lancer CSpect sous macOS, mais il est introuvable.\n\nInstallez-le depuis :\nhttps://www.mono-project.com/download/stable/"
     },
     "de": {
         "argsMenu": "Startparameter...",
@@ -447,7 +456,8 @@ STRINGS = {
         "setCSpect": "CSpect-Ordner:",
         "gamesPick": "Wähle den Ordner mit den Spielen (ein Unterordner pro Spiel)",
         "gamesMissing": "Der Spieleordner existiert nicht.",
-        "monoMissing": "Zum Starten von CSpect unter Linux wird Mono benötigt, wurde aber nicht gefunden.\n\nInstalliere es, z. B. unter Ubuntu/Debian:\nsudo apt install mono-devel"
+        "monoMissing": "Zum Starten von CSpect unter Linux wird Mono benötigt, wurde aber nicht gefunden.\n\nInstalliere es, z. B. unter Ubuntu/Debian:\nsudo apt install mono-devel",
+        "monoMissingMac": "Zum Starten von CSpect unter macOS wird Mono benötigt, wurde aber nicht gefunden.\n\nInstalliere es von:\nhttps://www.mono-project.com/download/stable/"
     }
 }
 
@@ -706,8 +716,9 @@ def list_images(folder):
 
 
 def find_image(folder, image_cfg, game_file):
-    """Priority: image= > latest <executable name>*.png (CSpect F5 screenshot) > cover/copertina.*
-    > other CSpect screenshots > screen*/title* > first picture in the folder"""
+    """Priority: image= > latest CSpect F5 screenshot of the game (<executable name>*.png, or
+    screenshot_<date>.png for .bas/.tap games started with NextZXOS) > cover/copertina.*
+    > latest other CSpect screenshot > screen*/title* > first picture in the folder"""
     if image_cfg:
         p = os.path.join(folder, norm(image_cfg))
         if os.path.isfile(p):
@@ -731,7 +742,8 @@ def find_image(folder, image_cfg, game_file):
     c = None
     if game_file:
         base = os.path.splitext(os.path.basename(game_file))[0].lower()
-        c = newest(e for e in shots if e.name.lower().endswith('.png') and stem(e).lower().startswith(base))
+        c = newest(e for e in shots if e.name.lower().endswith('.png') and
+                   (stem(e).lower().startswith(base) or re.match(r'(?i)screenshot' + SHOT_RE.pattern, stem(e))))
     if not c:
         c = next((e for e in imgs if re.match(r'^(cover|copertina)', stem(e), re.I)), None)
     if not c:
@@ -824,9 +836,19 @@ def get_save_files(g):
 
 
 def move_to_trash(path):
-    """Moves a file to the desktop Trash (gio, or the freedesktop.org Trash folder)."""
+    """Moves a file to the desktop Trash (macOS Trash, gio, or the freedesktop.org Trash folder)."""
     if IS_WIN:
         os.remove(path)
+        return
+    if IS_MAC:
+        trash = os.path.expanduser('~/.Trash')
+        name = os.path.basename(path)
+        stem, ext = os.path.splitext(name)
+        n = 1
+        while os.path.exists(os.path.join(trash, name)):
+            n += 1
+            name = '%s %d%s' % (stem, n, ext)
+        shutil.move(path, os.path.join(trash, name))
         return
     gio = shutil.which('gio')
     if gio and subprocess.run([gio, 'trash', path], capture_output=True).returncode == 0:
@@ -845,6 +867,21 @@ def move_to_trash(path):
         f.write('[Trash Info]\nPath=%s\nDeletionDate=%s\n' % (
             urllib.parse.quote(os.path.abspath(path)), datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')))
     shutil.move(path, os.path.join(files_dir, name))
+
+
+def find_mono():
+    """Path of mono (PATH first, then the usual macOS install folders), or None."""
+    mono = shutil.which('mono')
+    if mono or not IS_MAC:
+        return mono
+    return next((p for p in MAC_MONO if os.path.isfile(p)), None)
+
+
+def mono_env(mono):
+    """Environment with the mono folder in PATH (ZXOS.sh calls plain 'mono')."""
+    env = dict(os.environ)
+    env['PATH'] = os.path.dirname(mono) + os.pathsep + env.get('PATH', '')
+    return env
 
 
 def split_args(text):
@@ -1114,7 +1151,7 @@ class Launcher:
         self.f_title = (base, 16, 'bold')
         self.f_star = (base, 20)
         self.f_play = (base, 12, 'bold')
-        self.f_mono = ('DejaVu Sans Mono', 10)
+        self.f_mono = ('Menlo' if IS_MAC else 'DejaVu Sans Mono', 10)
 
         root.title(APP_NAME + ' - ZX Spectrum Next')
         root.geometry('960x600')
@@ -1217,6 +1254,9 @@ class Launcher:
         self.lst.bind('<<ListboxSelect>>', lambda e: self.show_game(self.selected()))
         self.lst.bind('<Double-Button-1>', lambda e: self.start_game(self.selected()))
         self.lst.bind('<Button-3>', self._context_menu)
+        if IS_MAC:      # on macOS the right button is Button-2, or Control+click
+            self.lst.bind('<Button-2>', self._context_menu)
+            self.lst.bind('<Control-Button-1>', self._context_menu)
 
         # right: title + stars, picture, file + PLAY
         right = tk.Frame(self.paned, bg=C_BACK, padx=10, pady=10)
@@ -1276,6 +1316,8 @@ class Launcher:
         for n in range(6):
             r.bind('<Control-Key-%d>' % n, lambda e, n=n: self._ctrl_rating(n))
             r.bind('<Control-KP_%d>' % n, lambda e, n=n: self._ctrl_rating(n))
+            if IS_MAC:
+                r.bind('<Command-Key-%d>' % n, lambda e, n=n: self._ctrl_rating(n))
         self.txt_search.bind('<Down>', lambda e: self._move(1))
         self.txt_search.bind('<Up>', lambda e: self._move(-1))
 
@@ -1509,9 +1551,9 @@ class Launcher:
             return 'break'
         cmd = []
         if not IS_WIN:
-            mono = shutil.which('mono')
+            mono = find_mono()
             if not mono:
-                messagebox.showerror(APP_NAME, T('monoMissing'), parent=self.root)
+                messagebox.showerror(APP_NAME, T('monoMissingMac' if IS_MAC else 'monoMissing'), parent=self.root)
                 return 'break'
             cmd.append(mono)
         if os.path.splitext(g.file)[1].lower() in OS_EXTS:
@@ -1610,8 +1652,10 @@ class Launcher:
             r = messagebox.askyesnocancel(APP_NAME, T('osNoImageDl', img), icon='warning', parent=self.root)
             if r:
                 cmd = [os.environ.get('COMSPEC', 'cmd.exe'), '/c', zxos] if IS_WIN else ['bash', zxos]
+                mono = None if IS_WIN else find_mono()
                 try:
                     proc = subprocess.Popen(cmd, cwd=cs_dir, start_new_session=not IS_WIN,
+                                            env=mono_env(mono) if mono else None,
                                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except OSError as ex:
                     messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
