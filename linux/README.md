@@ -1,7 +1,7 @@
 # CSpect Launcher for Linux and macOS
 
 The Linux and macOS version of **CSpect Launcher**, the game launcher for the ZX Spectrum Next emulator CSpect. For macOS see the [macOS section](#macos) below.
-Version 1.3 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
+Version 1.3.1 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
 
 ![CSpect Launcher for Linux](screenshot-linux.png)
 
@@ -90,6 +90,7 @@ Categories=Game;Emulator;
 - CSpect is started with `mono CSpect.exe ...`, from the folder of the game's executable (as in the `.sh` examples that come with CSpect).
 - Paths written by the Windows version (`.\GAMES`, `-mmc=.\`, `folder\game.nex`) are converted automatically, so the same `games.ini` works on both systems.
 - "Delete save files (.sav)" moves the files to the desktop **Trash**.
+- "Open game folder" opens the game folder in your file manager (with `xdg-open`).
 - File names on Linux are case sensitive; the launcher still recognises extensions such as `.NEX` or `.SAV` in upper case.
 - `.bas` and `.tap` games (started through NextZXOS, see the main README) use the Linux build of hdfmonkey included with CSpect (`hdfmonkey/linux-musl/hdfmonkey`, made executable automatically if needed). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`. The SD card image is the `zxnext.sd` downloaded by CSpect's `ZXOS.sh`; if it is missing, the launcher offers to run `ZXOS.sh` (with `bash`) to download it.
 
@@ -117,7 +118,7 @@ The first time, macOS may block the script or CSpect's `hdfmonkey` because they 
 ### Differences on macOS
 
 - Mono is also looked for in `/Library/Frameworks/Mono.framework`, `/opt/homebrew/bin` and `/usr/local/bin`, because programs started from the Finder do not always see the Terminal `PATH`.
-- "Delete save files (.sav)" moves the files to the macOS **Trash**.
+- "Delete save files (.sav)" moves the files to the macOS **Trash**; "Open game folder" opens it in the Finder with the executable selected.
 - Right-click (or Control-click) opens the game menu; **Cmd+1 … Cmd+5** also set the rating.
 - `.bas` and `.tap` games use the macOS build of hdfmonkey included with CSpect (`macos-mn` on Apple chips, `macos-intel` on Intel Macs). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`.
 - CSpect's changelog says that downloading the NextZXOS SD card image with `ZXOS.sh` on Mac and Linux can be very slow.

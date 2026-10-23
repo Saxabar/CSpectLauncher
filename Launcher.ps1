@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle 
 
 # ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.3'
+$AppVersion   = '1.3.1'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'
@@ -31,8 +31,10 @@ $CSpectUrl    = 'https://mdf200.itch.io/cspect'
 $Root        = $PSScriptRoot
 $IniPath     = Join-Path $Root 'games.ini'
 $GameExts    = @('.nex', '.snx', '.sna')
-$OsExts      = @('.bas', '.tap')                    # started with NextZXOS (when there is no .nex/.snx/.sna)
+$OsExts      = @('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
+$ZExts       = @('.z3', '.z4', '.z5', '.z7', '.z8')  # Z-machine text adventures, played with ZXZVM
 $OsDirs      = @('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
+$OsOptDirs   = @('GAMES/Z-Machine/ZXZVM')            # optional: copied when the SD card image has it
 $OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # system files and SD card images created on the fly
 $ImageExts   = @('.png', '.jpg', '.jpeg', '.gif', '.bmp')
 $DefaultArgs = '-w2 -vsync -zxnext -mmc=.\'
@@ -45,6 +47,9 @@ $script:SdImageCfg     = ''                                     # nextzxos=  (em
 $script:Lang           = 'en'                                   # lang=  (en, it, es, fr, de)
 $script:SortMode       = 'name'                                 # sort=  (name, rating)
 $script:ListWidth      = 368                                    # listwidth=
+$script:WinSize        = $null                                  # window=  (WxH saved on exit)
+$script:WinMax         = $false                                 # maximized=1
+$script:LastGame       = ''                                     # lastgame=  (section of the last game started)
 $script:ShowHidden     = $false                                 # also show hidden games (this session only)
 
 # ============================================================
@@ -61,7 +66,7 @@ $script:Strings = @{
     renameLbl = "Title shown in the list.`nLeave empty to use the folder name:`n{0}"
     setArgs = 'Other parameters:'; setWinSize = 'Window size:'; setFullscreen = 'Full screen'; dlCSpect = 'Download CSpect'; customTag = '(custom)'
     hideMenu = 'Hide game'; unhideMenu = 'Show game again'; showHiddenMenu = 'Show hidden games'
-    hiddenTag = '(hidden)'; delSavMenu = 'Delete save files (.sav)...'
+    hiddenTag = '(hidden)'; delSavMenu = 'Delete save files (.sav)...'; openFolderMenu = 'Open game folder'
     delSavConfirm = "Delete {0} save file(s) of {1}?`n`n{2}`n`nThe files are moved to the Recycle Bin."
     delSavDone = 'Save files deleted: {0}'; delSavErr = "Cannot delete:`n{0}"
     info = 'Info'; aboutTitle = 'About'; aboutVersion = 'Version {0}'
@@ -71,14 +76,14 @@ $script:Strings = @{
     play = 'PLAY'; noRating = 'no rating'; unplayable = '(not launchable)'
     fileLine = "File: {0}`nParameters: {1}"
     fileChoose = "File: to be chosen on first launch ({0} executables)`nParameters: {1}"
-    noFile = 'No .nex/.snx/.sna/.bas/.tap file - set it in games.ini'
+    noFile = 'No .nex/.snx/.sna/.bas/.tap/.z5 file - set it in games.ini'
     status = '{0} of {1} games   -   Enter/double-click: play   Ctrl+1..5: rating   F5: reload   Esc: exit'
     launched = 'Launched: {0}'; launchErr = "Launch error:`n{0}"
     chooseMenu = 'Choose executable...'; chooseTitle = 'Choose executable - {0}'
     chooseLbl = "Which executable do you want to use?`n(the choice is saved in games.ini)"
     ok = 'OK'; cancel = 'Cancel'
     saveErr = "Cannot save to games.ini:`n{0}"
-    noExeMsg = "No .nex / .snx / .sna / .bas / .tap file found in:`n{0}`n`nSet the file to launch in games.ini (file= key)."
+    noExeMsg = "No .nex / .snx / .sna / .bas / .tap / .z5 file found in:`n{0}`n`nSet the file to launch in games.ini (file= key)."
     osTag = '(with NextZXOS)'; osPrep = 'Preparing NextZXOS for {0}...'
     osNoImage = "SD card image with NextZXOS not found:`n{0}`n`nIt is needed to start .bas and .tap files (usually zxnext.sd in the CSpect folder, created by ZXOS.bat).`n`nDo you want to select it?"
     osNoImageDl = "SD card image with NextZXOS not found:`n{0}`n`nIt is needed to start .bas and .tap files.`n`nYes: download it now with ZXOS.bat, included with CSpect. CSpect opens in full screen and asks whether to download the image (answer Yes, use Alt+Tab if you cannot see the question); when the NextZXOS menu appears, close it with Alt+F4 and the game starts.`nNo: select an image you already have.`nCancel: do nothing."
@@ -90,6 +95,7 @@ $script:Strings = @{
     osPick = 'Select the SD card image with NextZXOS'; osFilter = 'SD card images'
     osNoTool = "hdfmonkey not found:`n{0}`n`nIt is included with CSpect (hdfmonkey folder)."
     osErr = "Cannot prepare NextZXOS:`n{0}"; osBadImage = "NextZXOS was not found in the SD card image:`n{0}"
+    osNoZvm = "ZXZVM, the Z-machine interpreter needed for .z3-.z8 text adventures, was not found in the SD card image:`n{0}`n`n(it is in C:/GAMES/Z-Machine/ZXZVM of the NextZXOS distribution)"
     emuNotFound = "CSpect.exe not found in:`n{0}`n`nDo you want to select the CSpect folder?"
     emuPick = 'Select the folder containing CSpect.exe'
     emuNotHere = 'CSpect.exe is not in this folder.'
@@ -107,7 +113,7 @@ $script:Strings = @{
     renameLbl = "Titolo mostrato nella lista.`nLascia vuoto per usare il nome della cartella:`n{0}"
     setArgs = 'Altri parametri:'; setWinSize = 'Grandezza finestra:'; setFullscreen = 'Schermo intero'; dlCSpect = 'Scarica CSpect'; customTag = '(personalizzati)'
     hideMenu = 'Nascondi gioco'; unhideMenu = 'Mostra di nuovo il gioco'; showHiddenMenu = 'Mostra giochi nascosti'
-    hiddenTag = '(nascosto)'; delSavMenu = 'Elimina salvataggi (.sav)...'
+    hiddenTag = '(nascosto)'; delSavMenu = 'Elimina salvataggi (.sav)...'; openFolderMenu = 'Apri cartella del gioco'
     delSavConfirm = "Eliminare {0} file di salvataggio di {1}?`n`n{2}`n`nI file vengono spostati nel Cestino."
     delSavDone = 'Salvataggi eliminati: {0}'; delSavErr = "Impossibile eliminare:`n{0}"
     info = 'Info'; aboutTitle = 'Informazioni'; aboutVersion = 'Versione {0}'
@@ -117,14 +123,14 @@ $script:Strings = @{
     play = 'GIOCA'; noRating = 'nessun voto'; unplayable = '(non avviabile)'
     fileLine = "File: {0}`nParametri: {1}"
     fileChoose = "File: da scegliere al primo avvio ({0} eseguibili)`nParametri: {1}"
-    noFile = 'Nessun file .nex/.snx/.sna/.bas/.tap - impostalo in games.ini'
+    noFile = 'Nessun file .nex/.snx/.sna/.bas/.tap/.z5 - impostalo in games.ini'
     status = '{0} di {1} giochi   -   Invio/doppio clic: gioca   Ctrl+1..5: voto   F5: ricarica   Esc: esci'
     launched = 'Avviato: {0}'; launchErr = "Errore nell'avvio:`n{0}"
     chooseMenu = 'Scegli eseguibile...'; chooseTitle = "Scegli l'eseguibile - {0}"
     chooseLbl = "Quale eseguibile vuoi usare?`n(la scelta viene salvata in games.ini)"
     ok = 'OK'; cancel = 'Annulla'
     saveErr = "Impossibile salvare in games.ini:`n{0}"
-    noExeMsg = "Nessun file .nex / .snx / .sna / .bas / .tap trovato in:`n{0}`n`nIndica il file da lanciare in games.ini (chiave file=)."
+    noExeMsg = "Nessun file .nex / .snx / .sna / .bas / .tap / .z5 trovato in:`n{0}`n`nIndica il file da lanciare in games.ini (chiave file=)."
     osTag = '(con NextZXOS)'; osPrep = 'Preparazione di NextZXOS per {0}...'
     osNoImage = "Immagine SD con NextZXOS non trovata:`n{0}`n`nServe per avviare i file .bas e .tap (di solito zxnext.sd nella cartella di CSpect, creata da ZXOS.bat).`n`nVuoi indicarla?"
     osNoImageDl = "Immagine SD con NextZXOS non trovata:`n{0}`n`nServe per avviare i file .bas e .tap.`n`nSì: scaricala adesso con ZXOS.bat, incluso in CSpect. CSpect si apre a schermo intero e chiede se scaricare l'immagine (rispondi Sì, con Alt+Tab se non vedi la domanda); quando compare il menu di NextZXOS chiudilo con Alt+F4 e il gioco parte.`nNo: indica un'immagine che hai già.`nAnnulla: non fare nulla."
@@ -136,6 +142,7 @@ $script:Strings = @{
     osPick = "Seleziona l'immagine SD con NextZXOS"; osFilter = 'Immagini SD'
     osNoTool = "hdfmonkey non trovato:`n{0}`n`nÈ incluso in CSpect (cartella hdfmonkey)."
     osErr = "Impossibile preparare NextZXOS:`n{0}"; osBadImage = "NextZXOS non è stato trovato nell'immagine SD:`n{0}"
+    osNoZvm = "ZXZVM, l'interprete Z-machine necessario per le avventure testuali .z3-.z8, non è stato trovato nell'immagine SD:`n{0}`n`n(si trova in C:/GAMES/Z-Machine/ZXZVM della distribuzione di NextZXOS)"
     emuNotFound = "CSpect.exe non trovato in:`n{0}`n`nVuoi indicare la cartella di CSpect?"
     emuPick = 'Seleziona la cartella che contiene CSpect.exe'
     emuNotHere = "In questa cartella non c'è CSpect.exe."
@@ -153,7 +160,7 @@ $script:Strings = @{
     renameLbl = "Título mostrado en la lista.`nDéjalo vacío para usar el nombre de la carpeta:`n{0}"
     setArgs = 'Otros parámetros:'; setWinSize = 'Tamaño de ventana:'; setFullscreen = 'Pantalla completa'; dlCSpect = 'Descargar CSpect'; customTag = '(personalizados)'
     hideMenu = 'Ocultar juego'; unhideMenu = 'Volver a mostrar el juego'; showHiddenMenu = 'Mostrar juegos ocultos'
-    hiddenTag = '(oculto)'; delSavMenu = 'Borrar partidas guardadas (.sav)...'
+    hiddenTag = '(oculto)'; delSavMenu = 'Borrar partidas guardadas (.sav)...'; openFolderMenu = 'Abrir carpeta del juego'
     delSavConfirm = "¿Borrar {0} archivo(s) de partida de {1}?`n`n{2}`n`nLos archivos se mueven a la Papelera de reciclaje."
     delSavDone = 'Partidas borradas: {0}'; delSavErr = "No se puede borrar:`n{0}"
     info = 'Info'; aboutTitle = 'Acerca de'; aboutVersion = 'Versión {0}'
@@ -163,14 +170,14 @@ $script:Strings = @{
     play = 'JUGAR'; noRating = 'sin nota'; unplayable = '(no ejecutable)'
     fileLine = "Archivo: {0}`nParámetros: {1}"
     fileChoose = "Archivo: a elegir en el primer inicio ({0} ejecutables)`nParámetros: {1}"
-    noFile = 'Ningún archivo .nex/.snx/.sna/.bas/.tap - indícalo en games.ini'
+    noFile = 'Ningún archivo .nex/.snx/.sna/.bas/.tap/.z5 - indícalo en games.ini'
     status = '{0} de {1} juegos   -   Intro/doble clic: jugar   Ctrl+1..5: nota   F5: recargar   Esc: salir'
     launched = 'Iniciado: {0}'; launchErr = "Error al iniciar:`n{0}"
     chooseMenu = 'Elegir ejecutable...'; chooseTitle = 'Elegir ejecutable - {0}'
     chooseLbl = "¿Qué ejecutable quieres usar?`n(la elección se guarda en games.ini)"
     ok = 'Aceptar'; cancel = 'Cancelar'
     saveErr = "No se puede guardar en games.ini:`n{0}"
-    noExeMsg = "No se encontró ningún archivo .nex / .snx / .sna / .bas / .tap en:`n{0}`n`nIndica el archivo a ejecutar en games.ini (clave file=)."
+    noExeMsg = "No se encontró ningún archivo .nex / .snx / .sna / .bas / .tap / .z5 en:`n{0}`n`nIndica el archivo a ejecutar en games.ini (clave file=)."
     osTag = '(con NextZXOS)'; osPrep = 'Preparando NextZXOS para {0}...'
     osNoImage = "No se encontró la imagen SD con NextZXOS:`n{0}`n`nEs necesaria para iniciar archivos .bas y .tap (normalmente zxnext.sd en la carpeta de CSpect, creada por ZXOS.bat).`n`n¿Quieres indicarla?"
     osNoImageDl = "No se encontró la imagen SD con NextZXOS:`n{0}`n`nEs necesaria para iniciar archivos .bas y .tap.`n`nSí: descárgala ahora con ZXOS.bat, incluido con CSpect. CSpect se abre en pantalla completa y pregunta si quieres descargar la imagen (responde Sí, con Alt+Tab si no ves la pregunta); cuando aparezca el menú de NextZXOS, ciérralo con Alt+F4 y el juego se inicia.`nNo: indica una imagen que ya tengas.`nCancelar: no hacer nada."
@@ -182,6 +189,7 @@ $script:Strings = @{
     osPick = 'Selecciona la imagen SD con NextZXOS'; osFilter = 'Imágenes SD'
     osNoTool = "No se encontró hdfmonkey:`n{0}`n`nSe incluye con CSpect (carpeta hdfmonkey)."
     osErr = "No se puede preparar NextZXOS:`n{0}"; osBadImage = "No se encontró NextZXOS en la imagen SD:`n{0}"
+    osNoZvm = "No se encontró ZXZVM, el intérprete Z-machine necesario para las aventuras de texto .z3-.z8, en la imagen SD:`n{0}`n`n(está en C:/GAMES/Z-Machine/ZXZVM de la distribución de NextZXOS)"
     emuNotFound = "No se encontró CSpect.exe en:`n{0}`n`n¿Quieres indicar la carpeta de CSpect?"
     emuPick = 'Selecciona la carpeta que contiene CSpect.exe'
     emuNotHere = 'CSpect.exe no está en esta carpeta.'
@@ -199,7 +207,7 @@ $script:Strings = @{
     renameLbl = "Titre affiché dans la liste.`nLaissez vide pour utiliser le nom du dossier :`n{0}"
     setArgs = 'Autres paramètres :'; setWinSize = 'Taille de la fenêtre :'; setFullscreen = 'Plein écran'; dlCSpect = 'Télécharger CSpect'; customTag = '(personnalisés)'
     hideMenu = 'Masquer le jeu'; unhideMenu = 'Afficher à nouveau le jeu'; showHiddenMenu = 'Afficher les jeux masqués'
-    hiddenTag = '(masqué)'; delSavMenu = 'Supprimer les sauvegardes (.sav)...'
+    hiddenTag = '(masqué)'; delSavMenu = 'Supprimer les sauvegardes (.sav)...'; openFolderMenu = 'Ouvrir le dossier du jeu'
     delSavConfirm = "Supprimer {0} fichier(s) de sauvegarde de {1} ?`n`n{2}`n`nLes fichiers sont placés dans la Corbeille."
     delSavDone = 'Sauvegardes supprimées : {0}'; delSavErr = "Impossible de supprimer :`n{0}"
     info = 'Infos'; aboutTitle = 'À propos'; aboutVersion = 'Version {0}'
@@ -209,14 +217,14 @@ $script:Strings = @{
     play = 'JOUER'; noRating = 'pas de note'; unplayable = '(non lançable)'
     fileLine = "Fichier : {0}`nParamètres : {1}"
     fileChoose = "Fichier : à choisir au premier lancement ({0} exécutables)`nParamètres : {1}"
-    noFile = 'Aucun fichier .nex/.snx/.sna/.bas/.tap - indiquez-le dans games.ini'
+    noFile = 'Aucun fichier .nex/.snx/.sna/.bas/.tap/.z5 - indiquez-le dans games.ini'
     status = '{0} sur {1} jeux   -   Entrée/double-clic : jouer   Ctrl+1..5 : note   F5 : recharger   Échap : quitter'
     launched = 'Lancé : {0}'; launchErr = "Erreur au lancement :`n{0}"
     chooseMenu = "Choisir l'exécutable..."; chooseTitle = "Choisir l'exécutable - {0}"
     chooseLbl = "Quel exécutable voulez-vous utiliser ?`n(le choix est enregistré dans games.ini)"
     ok = 'OK'; cancel = 'Annuler'
     saveErr = "Impossible d'enregistrer dans games.ini :`n{0}"
-    noExeMsg = "Aucun fichier .nex / .snx / .sna / .bas / .tap trouvé dans :`n{0}`n`nIndiquez le fichier à lancer dans games.ini (clé file=)."
+    noExeMsg = "Aucun fichier .nex / .snx / .sna / .bas / .tap / .z5 trouvé dans :`n{0}`n`nIndiquez le fichier à lancer dans games.ini (clé file=)."
     osTag = '(avec NextZXOS)'; osPrep = 'Préparation de NextZXOS pour {0}...'
     osNoImage = "Image de carte SD avec NextZXOS introuvable :`n{0}`n`nElle est nécessaire pour lancer les fichiers .bas et .tap (en général zxnext.sd dans le dossier de CSpect, créée par ZXOS.bat).`n`nVoulez-vous l'indiquer ?"
     osNoImageDl = "Image de carte SD avec NextZXOS introuvable :`n{0}`n`nElle est nécessaire pour lancer les fichiers .bas et .tap.`n`nOui : la télécharger maintenant avec ZXOS.bat, fourni avec CSpect. CSpect s'ouvre en plein écran et demande s'il faut télécharger l'image (répondez Oui, avec Alt+Tab si vous ne voyez pas la question) ; quand le menu de NextZXOS apparaît, fermez-le avec Alt+F4 et le jeu démarre.`nNon : indiquer une image que vous avez déjà.`nAnnuler : ne rien faire."
@@ -228,6 +236,7 @@ $script:Strings = @{
     osPick = "Sélectionnez l'image de carte SD avec NextZXOS"; osFilter = 'Images de carte SD'
     osNoTool = "hdfmonkey introuvable :`n{0}`n`nIl est fourni avec CSpect (dossier hdfmonkey)."
     osErr = "Impossible de préparer NextZXOS :`n{0}"; osBadImage = "NextZXOS est introuvable dans l'image de carte SD :`n{0}"
+    osNoZvm = "ZXZVM, l'interpréteur Z-machine nécessaire pour les aventures textuelles .z3-.z8, est introuvable dans l'image de carte SD :`n{0}`n`n(il se trouve dans C:/GAMES/Z-Machine/ZXZVM de la distribution NextZXOS)"
     emuNotFound = "CSpect.exe introuvable dans :`n{0}`n`nVoulez-vous indiquer le dossier de CSpect ?"
     emuPick = 'Sélectionnez le dossier contenant CSpect.exe'
     emuNotHere = "CSpect.exe n'est pas dans ce dossier."
@@ -245,7 +254,7 @@ $script:Strings = @{
     renameLbl = "In der Liste angezeigter Titel.`nLeer lassen, um den Ordnernamen zu verwenden:`n{0}"
     setArgs = 'Weitere Parameter:'; setWinSize = 'Fenstergröße:'; setFullscreen = 'Vollbild'; dlCSpect = 'CSpect herunterladen'; customTag = '(eigene)'
     hideMenu = 'Spiel ausblenden'; unhideMenu = 'Spiel wieder anzeigen'; showHiddenMenu = 'Ausgeblendete Spiele anzeigen'
-    hiddenTag = '(ausgeblendet)'; delSavMenu = 'Spielstände löschen (.sav)...'
+    hiddenTag = '(ausgeblendet)'; delSavMenu = 'Spielstände löschen (.sav)...'; openFolderMenu = 'Spielordner öffnen'
     delSavConfirm = "{0} Spielstand-Datei(en) von {1} löschen?`n`n{2}`n`nDie Dateien werden in den Papierkorb verschoben."
     delSavDone = 'Spielstände gelöscht: {0}'; delSavErr = "Löschen nicht möglich:`n{0}"
     info = 'Info'; aboutTitle = 'Über'; aboutVersion = 'Version {0}'
@@ -255,14 +264,14 @@ $script:Strings = @{
     play = 'SPIELEN'; noRating = 'keine Wertung'; unplayable = '(nicht startbar)'
     fileLine = "Datei: {0}`nParameter: {1}"
     fileChoose = "Datei: wird beim ersten Start gewählt ({0} Programme)`nParameter: {1}"
-    noFile = 'Keine .nex/.snx/.sna/.bas/.tap-Datei - in games.ini festlegen'
+    noFile = 'Keine .nex/.snx/.sna/.bas/.tap/.z5-Datei - in games.ini festlegen'
     status = '{0} von {1} Spielen   -   Enter/Doppelklick: spielen   Strg+1..5: Wertung   F5: neu laden   Esc: beenden'
     launched = 'Gestartet: {0}'; launchErr = "Fehler beim Start:`n{0}"
     chooseMenu = 'Programm wählen...'; chooseTitle = 'Programm wählen - {0}'
     chooseLbl = "Welches Programm möchtest du verwenden?`n(die Auswahl wird in games.ini gespeichert)"
     ok = 'OK'; cancel = 'Abbrechen'
     saveErr = "Speichern in games.ini nicht möglich:`n{0}"
-    noExeMsg = "Keine .nex / .snx / .sna / .bas / .tap-Datei gefunden in:`n{0}`n`nLege die zu startende Datei in games.ini fest (Schlüssel file=)."
+    noExeMsg = "Keine .nex / .snx / .sna / .bas / .tap / .z5-Datei gefunden in:`n{0}`n`nLege die zu startende Datei in games.ini fest (Schlüssel file=)."
     osTag = '(mit NextZXOS)'; osPrep = 'NextZXOS wird für {0} vorbereitet...'
     osNoImage = "SD-Karten-Image mit NextZXOS nicht gefunden:`n{0}`n`nEs wird zum Starten von .bas- und .tap-Dateien benötigt (meist zxnext.sd im CSpect-Ordner, erstellt von ZXOS.bat).`n`nMöchtest du es auswählen?"
     osNoImageDl = "SD-Karten-Image mit NextZXOS nicht gefunden:`n{0}`n`nEs wird zum Starten von .bas- und .tap-Dateien benötigt.`n`nJa: jetzt mit ZXOS.bat herunterladen (bei CSpect dabei). CSpect öffnet sich im Vollbild und fragt, ob das Image heruntergeladen werden soll (mit Ja antworten, Alt+Tab falls die Frage nicht zu sehen ist); wenn das NextZXOS-Menü erscheint, mit Alt+F4 schließen, dann startet das Spiel.`nNein: ein vorhandenes Image auswählen.`nAbbrechen: nichts tun."
@@ -274,6 +283,7 @@ $script:Strings = @{
     osPick = 'Wähle das SD-Karten-Image mit NextZXOS'; osFilter = 'SD-Karten-Images'
     osNoTool = "hdfmonkey nicht gefunden:`n{0}`n`nEs ist bei CSpect dabei (Ordner hdfmonkey)."
     osErr = "NextZXOS kann nicht vorbereitet werden:`n{0}"; osBadImage = "NextZXOS wurde im SD-Karten-Image nicht gefunden:`n{0}"
+    osNoZvm = "ZXZVM, der Z-Machine-Interpreter für die Textadventures .z3-.z8, wurde im SD-Karten-Image nicht gefunden:`n{0}`n`n(er liegt in C:/GAMES/Z-Machine/ZXZVM der NextZXOS-Distribution)"
     emuNotFound = "CSpect.exe nicht gefunden in:`n{0}`n`nMöchtest du den CSpect-Ordner auswählen?"
     emuPick = 'Wähle den Ordner mit CSpect.exe'
     emuNotHere = 'CSpect.exe befindet sich nicht in diesem Ordner.'
@@ -351,6 +361,8 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
         ';  args=           CSpect parameters for all games'
         ';  sort=           list order: name or rating'
         ';  listwidth=      list width in pixels (also by dragging the divider)'
+        ';  window=         window size (WxH) and maximized=1, saved on exit'
+        ';  lastgame=       last game started, selected when the launcher opens'
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games'
         ';                  (default: zxnext.sd in the CSpect folder)'
         ';'
@@ -445,6 +457,10 @@ function Load-Settings {
     if ($script:Strings.ContainsKey($l)) { $script:Lang = $l } else { $script:Lang = 'en' }
     if ($set['sort'] -match '^\s*(voto|rating)\s*$') { $script:SortMode = 'rating' } else { $script:SortMode = 'name' }
     if ($set['listwidth'] -match '^\s*(\d+)\s*$') { $script:ListWidth = [math]::Max(200, [math]::Min(1200, [int]$Matches[1])) }
+    $script:WinSize = $null
+    if ($set['window'] -match '^\s*(\d+)\s*x\s*(\d+)\s*$') { $script:WinSize = New-Object System.Drawing.Size([int]$Matches[1], [int]$Matches[2]) }
+    $script:WinMax = ($set['maximized'] -match '^\s*(1|yes|true)\s*$')
+    $script:LastGame = "$($set['lastgame'])".Trim()
     return $ini
 }
 
@@ -926,17 +942,32 @@ public static class NextFat {
     static long fatPos, dataPos, clusterSize;
     static uint rootCluster;
 
-    // copia le cartelle indicate (dalla radice dell'immagine) in dest
-    public static void Extract(string image, string[] dirs, string dest) {
+    // copies the given folders (paths from the root of the image, e.g. "SYS" or "GAMES/Z-Machine/ZXZVM")
+    // into dest, each one under its last name; the optional ones are skipped when missing
+    public static void Extract(string image, string[] dirs, string[] optional, string dest) {
         using (fs = new FileStream(image, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
             Open();
-            List<Entry> root = ReadDir(rootCluster);
             foreach (string d in dirs) {
-                Entry e = root.Find(x => x.IsDir && string.Equals(x.Name, d, StringComparison.OrdinalIgnoreCase));
+                Entry e = FindDir(d);
                 if (e == null) throw new FileNotFoundException("/" + d);
-                CopyDir(e.Cluster, Path.Combine(dest, d));
+                CopyDir(e.Cluster, Path.Combine(dest, Path.GetFileName(d)));
+            }
+            foreach (string d in optional) {
+                Entry e = FindDir(d);
+                if (e != null) CopyDir(e.Cluster, Path.Combine(dest, Path.GetFileName(d)));
             }
         }
+    }
+
+    static Entry FindDir(string path) {
+        Entry e = null;
+        uint cluster = rootCluster;
+        foreach (string part in path.Split('/')) {
+            e = ReadDir(cluster).Find(x => x.IsDir && string.Equals(x.Name, part, StringComparison.OrdinalIgnoreCase));
+            if (e == null) return null;
+            cluster = e.Cluster;
+        }
+        return e;
     }
 
     static byte[] Read(long pos, int n) {
@@ -1142,12 +1173,12 @@ function Update-OsFiles([string]$sdImage) {
     $dir = Join-Path $OsWork 'nextzxos'
     $stampFile = Join-Path $OsWork 'nextzxos.txt'
     $fi = Get-Item -LiteralPath $sdImage
-    $stamp = "$($fi.FullName)|$($fi.Length)|$($fi.LastWriteTimeUtc.Ticks)"
+    $stamp = "$($fi.FullName)|$($fi.Length)|$($fi.LastWriteTimeUtc.Ticks)|$($OsDirs + $OsOptDirs -join ',')"
     if ((Test-Path -LiteralPath $dir) -and (Test-Path -LiteralPath $stampFile) -and
         [System.IO.File]::ReadAllText($stampFile) -eq $stamp) { return $dir }
     [void][System.IO.Directory]::CreateDirectory($OsWork)
     if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
-    try { [NextFat]::Extract($sdImage, $OsDirs, $dir) } catch {
+    try { [NextFat]::Extract($sdImage, $OsDirs, $OsOptDirs, $dir) } catch {
         $msg = $_.Exception.GetBaseException().Message
         if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
         throw ((T 'osBadImage' $sdImage) + "`n$msg")
@@ -1159,40 +1190,90 @@ function Update-OsFiles([string]$sdImage) {
     return $dir
 }
 
-# autoexec.bas (+3DOS format): goes to c:/GAME and loads the game
-#   .bas:  .cd /game  -  LOAD "name.bas"
-#   .tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
-function New-Autoexec([string]$fileName, [bool]$isTap) {
-    $enc = [System.Text.Encoding]::GetEncoding(28591)
-    $load = [byte]0xEF                      # LOAD token
-    $lines = @(, $enc.GetBytes('.cd /game'))
-    if ($isTap) {
-        $lines += , $enc.GetBytes(".run $fileName")
-        $lines += , ([byte[]](@($load) + $enc.GetBytes('"t:":') + @($load) + $enc.GetBytes('""')))
-    } else {
-        $lines += , ([byte[]](@($load) + $enc.GetBytes('"' + $fileName + '"')))
-    }
-    $prog = New-Object System.Collections.Generic.List[byte]
-    $num = 10
-    foreach ($body in $lines) {
-        $len = $body.Length + 1
-        $prog.AddRange([byte[]]@([byte]($num -shr 8), [byte]($num -band 255), [byte]($len -band 255), [byte]($len -shr 8)))
-        $prog.AddRange([byte[]]$body)
-        $prog.Add(13)
-        $num += 10
-    }
+# one BASIC line: number (big-endian), length, text, ENTER
+function New-BasicLine([int]$num, [byte[]]$body) {
+    $len = $body.Length + 1
+    # the leading comma keeps it a byte[] (otherwise PowerShell unrolls it into object[])
+    return , [byte[]](@([byte]($num -shr 8), [byte]($num -band 255), [byte]($len -band 255), [byte]($len -shr 8)) + $body + @([byte]13))
+}
+
+# BASIC program file in +3DOS format (128-byte header), starting at line $autostart
+function New-Plus3Basic([byte[]]$prog, [int]$autostart) {
     $h = New-Object byte[] 128
     [System.Text.Encoding]::ASCII.GetBytes('PLUS3DOS').CopyTo($h, 0)
     $h[8] = 0x1A; $h[9] = 1; $h[10] = 0
-    [BitConverter]::GetBytes([uint32](128 + $prog.Count)).CopyTo($h, 11)
+    [BitConverter]::GetBytes([uint32](128 + $prog.Length)).CopyTo($h, 11)
     $h[15] = 0                                                       # BASIC program
-    [BitConverter]::GetBytes([uint16]$prog.Count).CopyTo($h, 16)
-    [BitConverter]::GetBytes([uint16]10).CopyTo($h, 18)              # starts at line 10
-    [BitConverter]::GetBytes([uint16]$prog.Count).CopyTo($h, 20)
+    [BitConverter]::GetBytes([uint16]$prog.Length).CopyTo($h, 16)
+    [BitConverter]::GetBytes([uint16]$autostart).CopyTo($h, 18)
+    [BitConverter]::GetBytes([uint16]$prog.Length).CopyTo($h, 20)
     $sum = 0
     for ($i = 0; $i -lt 127; $i++) { $sum += $h[$i] }
     $h[127] = [byte]($sum -band 255)
-    return [byte[]]($h + $prog.ToArray())
+    return [byte[]]($h + $prog)
+}
+
+# autoexec.bas: goes to c:/GAME and loads the game
+#   bas:  .cd /game  -  LOAD "name.bas"
+#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
+#   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by New-ZvmLoader)
+function New-Autoexec([string]$fileName, [string]$mode) {
+    $enc = [System.Text.Encoding]::GetEncoding(28591)
+    $load = [byte]0xEF                      # LOAD token
+    $lines = @(, $enc.GetBytes('.cd /game'))
+    switch ($mode) {
+        'tap' {
+            $lines += , $enc.GetBytes(".run $fileName")
+            $lines += , ([byte[]](@($load) + $enc.GetBytes('"t:":') + @($load) + $enc.GetBytes('""')))
+        }
+        'zvm' { $lines += , ([byte[]](@($load) + $enc.GetBytes('"c:/zxzvm/run.bas"'))) }
+        default { $lines += , ([byte[]](@($load) + $enc.GetBytes('"' + $fileName + '"'))) }
+    }
+    $prog = New-Object System.Collections.Generic.List[byte]
+    $num = 10
+    foreach ($body in $lines) { $prog.AddRange((New-BasicLine $num $body)); $num += 10 }
+    return New-Plus3Basic $prog.ToArray() 10
+}
+
+# number in a BASIC line: digits followed by its hidden 5-byte form (small integer)
+function Get-BasicNumber([int]$n) {
+    return , [byte[]]([System.Text.Encoding]::ASCII.GetBytes("$n") + @([byte]0x0E, 0, 0, [byte]($n -band 255), [byte]($n -shr 8), 0))
+}
+
+# ZXZVM loader: a copy of ZXZVM's NXZXZVM.BAS that keeps the lines up to its autostart line
+# (CLEAR %$67ff) and then, instead of the welcome screen and the file chooser, does what
+# PROC story() does, with a key press already waiting so the story starts at once:
+#   PROC loadZXZVM("c:/zxzvm/"): PROC setup(): POKE 23560,13: LET f=PEEK 23611:
+#   IF INT (f/32)=2*INT (f/64) THEN POKE 23611,f+32
+#   PROC start("<file>"): ERASE
+# (ZXZVM's wait_key takes the key from LAST_K=23560 when bit 5 of FLAGS=23611 is set)
+function New-ZvmLoader([string]$basPath, [string]$story) {
+    $b = [System.IO.File]::ReadAllBytes($basPath)
+    if ($b.Length -lt 128 -or [System.Text.Encoding]::ASCII.GetString($b, 0, 8) -ne 'PLUS3DOS') { throw "NXZXZVM.BAS?" }
+    $plen = [BitConverter]::ToUInt16($b, 16)
+    $auto = [BitConverter]::ToUInt16($b, 18)
+    $prog = New-Object System.Collections.Generic.List[byte]
+    $i = 128
+    while ($i + 4 -le 128 + $plen) {
+        $num = $b[$i] * 256 + $b[$i + 1]
+        $len = $b[$i + 2] + $b[$i + 3] * 256
+        if ($num -gt $auto) { break }
+        $prog.AddRange([byte[]]$b[$i..($i + 3 + $len)])
+        $i += 4 + $len
+    }
+    $enc = [System.Text.Encoding]::GetEncoding(28591)
+    $PROC = [byte]0x93; $POKE = [byte]0xF4; $LET = [byte]0xF1; $PEEK = [byte]0xBE   # tokens
+    $IF = [byte]0xFA; $INT = [byte]0xBA; $THEN = [byte]0xCB; $ERASE = [byte]0xD2
+    $line1 = [byte[]](@($PROC) + $enc.GetBytes('loadZXZVM("c:/zxzvm/"):') + @($PROC) + $enc.GetBytes('setup():') +
+        @($POKE) + (Get-BasicNumber 23560) + $enc.GetBytes(',') + (Get-BasicNumber 13) + $enc.GetBytes(':') +
+        @($LET) + $enc.GetBytes('f=') + @($PEEK) + (Get-BasicNumber 23611) + $enc.GetBytes(':') +
+        @($IF, $INT) + $enc.GetBytes('(f/') + (Get-BasicNumber 32) + $enc.GetBytes(')=') + (Get-BasicNumber 2) +
+        $enc.GetBytes('*') + @($INT) + $enc.GetBytes('(f/') + (Get-BasicNumber 64) + $enc.GetBytes(')') +
+        @($THEN, $POKE) + (Get-BasicNumber 23611) + $enc.GetBytes(',f+') + (Get-BasicNumber 32))
+    $line2 = [byte[]](@($PROC) + $enc.GetBytes('start("' + $story + '"):') + @($ERASE))
+    $prog.AddRange((New-BasicLine ($auto + 10) $line1))
+    $prog.AddRange((New-BasicLine ($auto + 20) $line2))
+    return New-Plus3Basic $prog.ToArray() $auto
 }
 
 # creates the SD card image of the game; returns its path, $null if cancelled
@@ -1200,7 +1281,9 @@ function New-OsImage($game) {
     $sd = Find-SdImage
     if (-not $sd) { return $null }
     $sys = Update-OsFiles $sd
-    $isTap = [System.IO.Path]::GetExtension($game.File) -ieq '.tap'
+    $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
+    $mode = if ($ext -eq '.tap') { 'tap' } elseif ($ZExts -contains $ext) { 'zvm' } else { 'bas' }
+    if ($mode -eq 'zvm' -and -not (Test-Path -LiteralPath (Join-Path $sys 'ZXZVM\NXZXZVM.BAS'))) { throw (T 'osNoZvm' $sd) }
     $exeDir = [System.IO.Path]::GetDirectoryName($game.File)
     $name = [System.IO.Path]::GetFileName($game.File)
     # some .tap files load other files from their folder: the whole folder is copied
@@ -1217,12 +1300,22 @@ function New-OsImage($game) {
     Invoke-Hdfmonkey @('mkdir', $img, '/GAME')
     Invoke-Hdfmonkey @('putdir', $img, $exeDir, '/GAME')
     # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
-    if ($isTap -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
+    if ($mode -eq 'tap' -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
         Invoke-Hdfmonkey @('put', $img, $game.File, '/GAME/GAME.TAP')
         $name = 'GAME.TAP'
     }
+    # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
+    if ($mode -eq 'zvm') {
+        if ($name -cnotmatch '^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$') {
+            $name = 'STORY' + $ext.ToUpper()
+            Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
+        }
+        $zl = Join-Path $OsWork 'RUN.BAS'
+        [System.IO.File]::WriteAllBytes($zl, (New-ZvmLoader (Join-Path $sys 'ZXZVM\NXZXZVM.BAS') $name))
+        Invoke-Hdfmonkey @('put', $img, $zl, '/ZXZVM/RUN.BAS')
+    }
     $ae = Join-Path $OsWork 'AUTOEXEC.BAS'
-    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $isTap))
+    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode))
     Invoke-Hdfmonkey @('put', $img, $ae, '/NEXTZXOS/AUTOEXEC.BAS')
     return $img
 }
@@ -1269,6 +1362,9 @@ function Start-Game($game) {
     try {
         [System.Diagnostics.Process]::Start($psi) | Out-Null
         $status.Text = T 'launched' $game.Title
+        # selected again the next time the launcher opens
+        $script:LastGame = $game.Section
+        try { Set-IniValue '_default' 'lastgame' $game.Section } catch {}
     } catch {
         [System.Windows.Forms.MessageBox]::Show((T 'launchErr' $_.Exception.Message), 'CSpect Launcher', 'OK', 'Error') | Out-Null
     }
@@ -1448,6 +1544,7 @@ $miArgs       = $menu.Items.Add('')
 $miRename     = $menu.Items.Add('')
 $miHide       = $menu.Items.Add('')
 $miDelSav     = $menu.Items.Add('')
+$miFolder     = $menu.Items.Add('')
 [void]$menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
 $miShowHidden = New-Object System.Windows.Forms.ToolStripMenuItem
 $miShowHidden.CheckOnClick = $true
@@ -1473,6 +1570,7 @@ function Apply-Language {
     $miArgs.Text    = T 'argsMenu'
     $miRename.Text  = T 'renameMenu'
     $miDelSav.Text  = T 'delSavMenu'
+    $miFolder.Text  = T 'openFolderMenu'
     $miShowHidden.Text = T 'showHiddenMenu'
     $btnSettings.Text = [string][char]0x2699 + ' ' + (T 'settings')
 }
@@ -1590,6 +1688,7 @@ $menu.Add_Opening({
     $miRename.Enabled = [bool]$g
     $miHide.Text      = if ($g -and $g.Hidden) { T 'unhideMenu' } else { T 'hideMenu' }
     $miDelSav.Enabled = ($g -and @(Get-SaveFiles $g).Count -gt 0)
+    $miFolder.Enabled = [bool]$g
     $miShowHidden.Checked = $script:ShowHidden
 })
 
@@ -1664,6 +1763,21 @@ $miDelSav.Add_Click({
     $status.Text = T 'delSavDone' $n
 })
 
+# opens the game folder in Explorer, with the executable selected when there is one
+$miFolder.Add_Click({
+    $g = $lst.SelectedItem
+    if (-not $g) { return }
+    try {
+        if ($g.File -and (Test-Path -LiteralPath $g.File)) {
+            [System.Diagnostics.Process]::Start('explorer.exe', "/select,`"$($g.File)`"") | Out-Null
+        } else {
+            [System.Diagnostics.Process]::Start('explorer.exe', "`"$($g.Folder)`"") | Out-Null
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show((T 'launchErr' $_.Exception.Message), $AppName, 'OK', 'Error') | Out-Null
+    }
+})
+
 $btnPlay.Add_Click({ Start-Game $lst.SelectedItem })
 $txtFilter.Add_TextChanged({ Refresh-List })
 
@@ -1726,9 +1840,33 @@ $script:SortChanging = $true
 $cmbSort.SelectedIndex = $(if ($script:SortMode -eq 'rating') { 1 } else { 0 })
 $script:SortChanging = $false
 $left.Width = $script:ListWidth
+# window size saved on exit (at most as big as the screen)
+if ($script:WinSize) {
+    $wa = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+    $form.Size = New-Object System.Drawing.Size([math]::Min($script:WinSize.Width, $wa.Width), [math]::Min($script:WinSize.Height, $wa.Height))
+}
 if ($form.Width -lt $script:ListWidth + 600) { $form.Width = $script:ListWidth + 600 }
+if ($script:WinMax) { $form.WindowState = 'Maximized' }
 $icoPath = Join-Path (Split-Path $script:Emulator -Parent) 'ZXNext.ico'
 if (Test-Path -LiteralPath $icoPath) { try { $form.Icon = New-Object System.Drawing.Icon($icoPath) } catch {} }
 
-$form.Add_Shown({ Refresh-List; $txtFilter.Focus() })
+# on exit: window size (the normal one, also when maximized) and maximized state
+$form.Add_FormClosing({
+    $b = if ($form.WindowState -eq 'Normal') { $form.Bounds } else { $form.RestoreBounds }
+    try {
+        Set-IniValue '_default' 'window' "$($b.Width)x$($b.Height)"
+        Set-IniValue '_default' 'maximized' $(if ($form.WindowState -eq 'Maximized') { '1' } else { '' })
+    } catch {}
+})
+
+$form.Add_Shown({
+    Refresh-List
+    # the last game started is selected again
+    if ($script:LastGame) {
+        for ($i = 0; $i -lt $lst.Items.Count; $i++) {
+            if ($lst.Items[$i].Section -eq $script:LastGame) { $lst.SelectedIndex = $i; $lst.TopIndex = [math]::Max(0, $i - 5); break }
+        }
+    }
+    $txtFilter.Focus()
+})
 [void]$form.ShowDialog()

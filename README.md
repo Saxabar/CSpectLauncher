@@ -1,7 +1,7 @@
 # CSpect Launcher
 
 A game launcher for the ZX Spectrum Next emulator **CSpect**.
-Version 1.3 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
+Version 1.3.1 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 
@@ -17,7 +17,7 @@ The interface is available in **English, Italian, Spanish, French and German**.
 - 1–5 star ratings
 - Cover pictures, taken automatically from CSpect screenshots (F5)
 - Executables found in the game folder and its subfolders (`.nex`, `.snx`, `.sna`)
-- NextBASIC (`.bas`) and tape (`.tap`) games started automatically through NextZXOS
+- NextBASIC (`.bas`), tape (`.tap`) and Z-machine text adventure (`.z3`–`.z8`) games started automatically through NextZXOS
 - Per-game launch parameters, custom titles and hidden games
 - Delete a game's save files (moved to the Recycle Bin)
 - Settings for language, folders, window size (1x–4x) and full screen
@@ -70,19 +70,20 @@ Folders inside the launcher folder are saved as relative paths (`.\GAMES`), so y
 - **Left:** the game list, with a Search box and a Sort menu (Name / Rating).
 - **Right:** title, rating stars, cover picture, file name, parameters and the **PLAY** button.
 - Drag the thin divider between list and details to resize the list (the width is remembered).
+- The window size is remembered when you close the launcher, and the last game you started is selected again the next time.
 
 ### Starting a game
 
 Double-click the game, press **Enter**, or click **PLAY**.
 CSpect starts in the folder of the game's executable, so save files and screenshots are stored next to the game.
 
-Supported files are `.nex`, `.snx` and `.sna`, also inside subfolders. Games that only contain NextBASIC (`.bas`) or tape (`.tap`) files are started through NextZXOS (see below). Games with none of these files are marked *(not launchable)*.
+Supported files are `.nex`, `.snx` and `.sna`, also inside subfolders. Games that only contain NextBASIC (`.bas`), tape (`.tap`) or Z-machine (`.z3`, `.z4`, `.z5`, `.z7`, `.z8`) files are started through NextZXOS (see below). Games with none of these files are marked *(not launchable)*.
 
 If a folder contains more than one executable, the launcher asks which one to use the first time and remembers the choice.
 
-### .bas and .tap games (NextZXOS)
+### .bas, .tap and .z5 games (NextZXOS)
 
-CSpect cannot open `.bas` and `.tap` files directly: they need NextZXOS, the operating system of the Next. When you start one of these games, the launcher:
+CSpect cannot open `.bas`, `.tap` and Z-machine (`.z3`–`.z8`) files directly: they need NextZXOS, the operating system of the Next. When you start one of these games, the launcher:
 
 1. copies the NextZXOS system files once from your SD card image (by default `zxnext.sd` in the CSpect folder, the image downloaded by CSpect's `ZXOS.bat`);
 2. creates a small SD card image (64 MB or more) in your temporary folder, with NextZXOS, the game's folder and an `autoexec.bas` that loads the game;
@@ -99,6 +100,7 @@ CSpect does not include `zxnext.sd`: it is downloaded the first time you run CSp
 Notes:
 
 - `.tap` files are loaded in 128K mode; a few games that need 48K mode may not work.
+- Z-machine text adventures (`.z3`, `.z4`, `.z5`, `.z7`, `.z8`, such as Infocom games) are played with **ZXZVM**, the interpreter included in the NextZXOS distribution (`C:/GAMES/Z-Machine/ZXZVM` in `zxnext.sd`): the launcher copies it into the image and starts the story directly, without ZXZVM's welcome screen and without its "press a key to start" prompt. Files whose name is longer than 8 characters are copied as `STORY.Z5` (or `.Z3`...).
 - The image is created again at every launch, so anything the game saves (high scores, saved games) is lost when CSpect is closed. Images of previous launches are deleted automatically (except the one of a CSpect still running).
 - CSpect starts in the game's folder, so F5 screenshots are saved next to the game and used as the cover, as for the other games.
 - The file shown in the details ends with *(with NextZXOS)*. The CSpect option `-mmc=` is not used for these games.
@@ -114,7 +116,7 @@ While playing, press **F5** in CSpect to take a screenshot: it is saved in the g
 Picture priority:
 
 1. `image=` in `games.ini`
-2. the latest CSpect screenshot of the executable (`<name>_<date>.png`, or `screenshot_<date>.png` for `.bas` / `.tap` games)
+2. the latest CSpect screenshot of the executable (`<name>_<date>.png`, or `screenshot_<date>.png` for `.bas` / `.tap` / `.z5` games)
 3. `cover.*` / `copertina.*`
 4. the latest other CSpect screenshot in the folder
 5. `screen*` / `title*`
@@ -126,11 +128,12 @@ If you take several screenshots, the most recent one is used.
 
 | Item | What it does |
 |---|---|
-| Choose executable... | pick which `.nex` / `.snx` / `.sna` (or `.bas` / `.tap`) file to start |
+| Choose executable... | pick which `.nex` / `.snx` / `.sna` (or `.bas` / `.tap` / `.z5`) file to start |
 | Launch parameters... | custom CSpect parameters for this game only (empty = general ones) |
 | Rename title... | change the name shown in the list (empty = folder name) |
 | Hide game / Show game again | hide or show the game in the list |
 | Delete save files (.sav)... | moves the game's `.sav` files to the Recycle Bin, after confirmation |
+| Open game folder | opens the game folder in Explorer, with the executable selected |
 | Show hidden games | temporarily shows hidden games, so you can show them again |
 
 ### Settings (gear button, bottom right)
@@ -186,7 +189,9 @@ hidden=1
 | `args` | in `[_default]`: CSpect parameters for all games; in a game section: custom parameters for that game |
 | `sort` | list order: `name` or `rating` |
 | `listwidth` | list width in pixels |
-| `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` games (empty = `zxnext.sd` in the CSpect folder) |
+| `window` / `maximized` | window size (`960x600`) and maximized state (`1`), saved when the launcher is closed |
+| `lastgame` | last game started (folder name), selected again when the launcher opens |
+| `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` / `.z5` games (empty = `zxnext.sd` in the CSpect folder) |
 | `file` | executable to start (may include a subfolder) |
 | `rating` | rating 1..5 |
 | `title` | name shown in the list |

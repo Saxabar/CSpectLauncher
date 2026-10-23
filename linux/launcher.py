@@ -48,7 +48,7 @@ except Exception:
 
 # ---------- program information ----------
 APP_NAME = 'CSpect Launcher'
-APP_VERSION = '1.3'
+APP_VERSION = '1.3.1'
 APP_COPYRIGHT = '(c) 2026 Giuseppe Papa - GPL-3.0'
 APP_URL = 'https://github.com/Saxabar/CSpectLauncher'
 CSPECT_URL = 'https://mdf200.itch.io/cspect'
@@ -61,8 +61,10 @@ MAC_MONO = ('/Library/Frameworks/Mono.framework/Versions/Current/Commands/mono',
 ROOT = os.path.dirname(os.path.abspath(__file__))
 INI_PATH = os.path.join(ROOT, 'games.ini')
 GAME_EXTS = ('.nex', '.snx', '.sna')
-OS_EXTS = ('.bas', '.tap')                  # started with NextZXOS (when there is no .nex/.snx/.sna)
+OS_EXTS = ('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
+Z_EXTS = ('.z3', '.z4', '.z5', '.z7', '.z8')    # Z-machine text adventures, played with ZXZVM
 OS_DIRS = ('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
+OS_OPT_DIRS = ('GAMES/Z-Machine/ZXZVM',)        # optional: copied when the SD card image has it
 # NextZXOS system files and SD card images created on the fly
 OS_WORK = (os.path.join(os.environ.get('TEMP', ''), 'CSpectLauncher') if IS_WIN else
            os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'cspect-launcher'))
@@ -106,6 +108,7 @@ STRINGS = {
         "showHiddenMenu": "Show hidden games",
         "hiddenTag": "(hidden)",
         "delSavMenu": "Delete save files (.sav)...",
+        "openFolderMenu": "Open game folder",
         "delSavConfirm": "Delete {0} save file(s) of {1}?\n\n{2}\n\nThe files are moved to the Trash.",
         "delSavDone": "Save files deleted: {0}",
         "delSavErr": "Cannot delete:\n{0}",
@@ -124,7 +127,7 @@ STRINGS = {
         "unplayable": "(not launchable)",
         "fileLine": "File: {0}\nParameters: {1}",
         "fileChoose": "File: to be chosen on first launch ({0} executables)\nParameters: {1}",
-        "noFile": "No .nex/.snx/.sna/.bas/.tap file - set it in games.ini",
+        "noFile": "No .nex/.snx/.sna/.bas/.tap/.z5 file - set it in games.ini",
         "status": "{0} of {1} games   -   Enter/double-click: play   Ctrl+1..5: rating   F5: reload   Esc: exit",
         "launched": "Launched: {0}",
         "launchErr": "Launch error:\n{0}",
@@ -134,7 +137,7 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Cancel",
         "saveErr": "Cannot save to games.ini:\n{0}",
-        "noExeMsg": "No .nex / .snx / .sna / .bas / .tap file found in:\n{0}\n\nSet the file to launch in games.ini (file= key).",
+        "noExeMsg": "No .nex / .snx / .sna / .bas / .tap / .z5 file found in:\n{0}\n\nSet the file to launch in games.ini (file= key).",
         "osTag": "(with NextZXOS)",
         "osPrep": "Preparing NextZXOS for {0}...",
         "osNoImage": "SD card image with NextZXOS not found:\n{0}\n\nIt is needed to start .bas and .tap files (usually zxnext.sd in the CSpect folder, created by ZXOS.sh).\n\nDo you want to select it?",
@@ -148,6 +151,7 @@ STRINGS = {
         "osFilter": "SD card images",
         "osNoTool": "hdfmonkey not found:\n{0}\n\nIt is included with CSpect (hdfmonkey folder).",
         "osErr": "Cannot prepare NextZXOS:\n{0}",
+        "osNoZvm": "ZXZVM, the Z-machine interpreter needed for .z3-.z8 text adventures, was not found in the SD card image:\n{0}\n\n(it is in C:/GAMES/Z-Machine/ZXZVM of the NextZXOS distribution)",
         "osBadImage": "NextZXOS was not found in the SD card image:\n{0}",
         "emuNotFound": "CSpect.exe not found in:\n{0}\n\nDo you want to select the CSpect folder?",
         "emuPick": "Select the folder containing CSpect.exe",
@@ -180,6 +184,7 @@ STRINGS = {
         "showHiddenMenu": "Mostra giochi nascosti",
         "hiddenTag": "(nascosto)",
         "delSavMenu": "Elimina salvataggi (.sav)...",
+        "openFolderMenu": "Apri cartella del gioco",
         "delSavConfirm": "Eliminare {0} file di salvataggio di {1}?\n\n{2}\n\nI file vengono spostati nel Cestino.",
         "delSavDone": "Salvataggi eliminati: {0}",
         "delSavErr": "Impossibile eliminare:\n{0}",
@@ -198,7 +203,7 @@ STRINGS = {
         "unplayable": "(non avviabile)",
         "fileLine": "File: {0}\nParametri: {1}",
         "fileChoose": "File: da scegliere al primo avvio ({0} eseguibili)\nParametri: {1}",
-        "noFile": "Nessun file .nex/.snx/.sna/.bas/.tap - impostalo in games.ini",
+        "noFile": "Nessun file .nex/.snx/.sna/.bas/.tap/.z5 - impostalo in games.ini",
         "status": "{0} di {1} giochi   -   Invio/doppio clic: gioca   Ctrl+1..5: voto   F5: ricarica   Esc: esci",
         "launched": "Avviato: {0}",
         "launchErr": "Errore nell'avvio:\n{0}",
@@ -208,7 +213,7 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Annulla",
         "saveErr": "Impossibile salvare in games.ini:\n{0}",
-        "noExeMsg": "Nessun file .nex / .snx / .sna / .bas / .tap trovato in:\n{0}\n\nIndica il file da lanciare in games.ini (chiave file=).",
+        "noExeMsg": "Nessun file .nex / .snx / .sna / .bas / .tap / .z5 trovato in:\n{0}\n\nIndica il file da lanciare in games.ini (chiave file=).",
         "osTag": "(con NextZXOS)",
         "osPrep": "Preparazione di NextZXOS per {0}...",
         "osNoImage": "Immagine SD con NextZXOS non trovata:\n{0}\n\nServe per avviare i file .bas e .tap (di solito zxnext.sd nella cartella di CSpect, creata da ZXOS.sh).\n\nVuoi indicarla?",
@@ -222,6 +227,7 @@ STRINGS = {
         "osFilter": "Immagini SD",
         "osNoTool": "hdfmonkey non trovato:\n{0}\n\nÈ incluso in CSpect (cartella hdfmonkey).",
         "osErr": "Impossibile preparare NextZXOS:\n{0}",
+        "osNoZvm": "ZXZVM, l'interprete Z-machine necessario per le avventure testuali .z3-.z8, non è stato trovato nell'immagine SD:\n{0}\n\n(si trova in C:/GAMES/Z-Machine/ZXZVM della distribuzione di NextZXOS)",
         "osBadImage": "NextZXOS non è stato trovato nell'immagine SD:\n{0}",
         "emuNotFound": "CSpect.exe non trovato in:\n{0}\n\nVuoi indicare la cartella di CSpect?",
         "emuPick": "Seleziona la cartella che contiene CSpect.exe",
@@ -254,6 +260,7 @@ STRINGS = {
         "showHiddenMenu": "Mostrar juegos ocultos",
         "hiddenTag": "(oculto)",
         "delSavMenu": "Borrar partidas guardadas (.sav)...",
+        "openFolderMenu": "Abrir carpeta del juego",
         "delSavConfirm": "¿Borrar {0} archivo(s) de partida de {1}?\n\n{2}\n\nLos archivos se mueven a la Papelera.",
         "delSavDone": "Partidas borradas: {0}",
         "delSavErr": "No se puede borrar:\n{0}",
@@ -272,7 +279,7 @@ STRINGS = {
         "unplayable": "(no ejecutable)",
         "fileLine": "Archivo: {0}\nParámetros: {1}",
         "fileChoose": "Archivo: a elegir en el primer inicio ({0} ejecutables)\nParámetros: {1}",
-        "noFile": "Ningún archivo .nex/.snx/.sna/.bas/.tap - indícalo en games.ini",
+        "noFile": "Ningún archivo .nex/.snx/.sna/.bas/.tap/.z5 - indícalo en games.ini",
         "status": "{0} de {1} juegos   -   Intro/doble clic: jugar   Ctrl+1..5: nota   F5: recargar   Esc: salir",
         "launched": "Iniciado: {0}",
         "launchErr": "Error al iniciar:\n{0}",
@@ -282,7 +289,7 @@ STRINGS = {
         "ok": "Aceptar",
         "cancel": "Cancelar",
         "saveErr": "No se puede guardar en games.ini:\n{0}",
-        "noExeMsg": "No se encontró ningún archivo .nex / .snx / .sna / .bas / .tap en:\n{0}\n\nIndica el archivo a ejecutar en games.ini (clave file=).",
+        "noExeMsg": "No se encontró ningún archivo .nex / .snx / .sna / .bas / .tap / .z5 en:\n{0}\n\nIndica el archivo a ejecutar en games.ini (clave file=).",
         "osTag": "(con NextZXOS)",
         "osPrep": "Preparando NextZXOS para {0}...",
         "osNoImage": "No se encontró la imagen SD con NextZXOS:\n{0}\n\nEs necesaria para iniciar archivos .bas y .tap (normalmente zxnext.sd en la carpeta de CSpect, creada por ZXOS.sh).\n\n¿Quieres indicarla?",
@@ -296,6 +303,7 @@ STRINGS = {
         "osFilter": "Imágenes SD",
         "osNoTool": "No se encontró hdfmonkey:\n{0}\n\nSe incluye con CSpect (carpeta hdfmonkey).",
         "osErr": "No se puede preparar NextZXOS:\n{0}",
+        "osNoZvm": "No se encontró ZXZVM, el intérprete Z-machine necesario para las aventuras de texto .z3-.z8, en la imagen SD:\n{0}\n\n(está en C:/GAMES/Z-Machine/ZXZVM de la distribución de NextZXOS)",
         "osBadImage": "No se encontró NextZXOS en la imagen SD:\n{0}",
         "emuNotFound": "No se encontró CSpect.exe en:\n{0}\n\n¿Quieres indicar la carpeta de CSpect?",
         "emuPick": "Selecciona la carpeta que contiene CSpect.exe",
@@ -328,6 +336,7 @@ STRINGS = {
         "showHiddenMenu": "Afficher les jeux masqués",
         "hiddenTag": "(masqué)",
         "delSavMenu": "Supprimer les sauvegardes (.sav)...",
+        "openFolderMenu": "Ouvrir le dossier du jeu",
         "delSavConfirm": "Supprimer {0} fichier(s) de sauvegarde de {1} ?\n\n{2}\n\nLes fichiers sont placés dans la Corbeille.",
         "delSavDone": "Sauvegardes supprimées : {0}",
         "delSavErr": "Impossible de supprimer :\n{0}",
@@ -346,7 +355,7 @@ STRINGS = {
         "unplayable": "(non lançable)",
         "fileLine": "Fichier : {0}\nParamètres : {1}",
         "fileChoose": "Fichier : à choisir au premier lancement ({0} exécutables)\nParamètres : {1}",
-        "noFile": "Aucun fichier .nex/.snx/.sna/.bas/.tap - indiquez-le dans games.ini",
+        "noFile": "Aucun fichier .nex/.snx/.sna/.bas/.tap/.z5 - indiquez-le dans games.ini",
         "status": "{0} sur {1} jeux   -   Entrée/double-clic : jouer   Ctrl+1..5 : note   F5 : recharger   Échap : quitter",
         "launched": "Lancé : {0}",
         "launchErr": "Erreur au lancement :\n{0}",
@@ -356,7 +365,7 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Annuler",
         "saveErr": "Impossible d'enregistrer dans games.ini :\n{0}",
-        "noExeMsg": "Aucun fichier .nex / .snx / .sna / .bas / .tap trouvé dans :\n{0}\n\nIndiquez le fichier à lancer dans games.ini (clé file=).",
+        "noExeMsg": "Aucun fichier .nex / .snx / .sna / .bas / .tap / .z5 trouvé dans :\n{0}\n\nIndiquez le fichier à lancer dans games.ini (clé file=).",
         "osTag": "(avec NextZXOS)",
         "osPrep": "Préparation de NextZXOS pour {0}...",
         "osNoImage": "Image de carte SD avec NextZXOS introuvable :\n{0}\n\nElle est nécessaire pour lancer les fichiers .bas et .tap (en général zxnext.sd dans le dossier de CSpect, créée par ZXOS.sh).\n\nVoulez-vous l'indiquer ?",
@@ -370,6 +379,7 @@ STRINGS = {
         "osFilter": "Images de carte SD",
         "osNoTool": "hdfmonkey introuvable :\n{0}\n\nIl est fourni avec CSpect (dossier hdfmonkey).",
         "osErr": "Impossible de préparer NextZXOS :\n{0}",
+        "osNoZvm": "ZXZVM, l'interpréteur Z-machine nécessaire pour les aventures textuelles .z3-.z8, est introuvable dans l'image de carte SD :\n{0}\n\n(il se trouve dans C:/GAMES/Z-Machine/ZXZVM de la distribution NextZXOS)",
         "osBadImage": "NextZXOS est introuvable dans l'image de carte SD :\n{0}",
         "emuNotFound": "CSpect.exe introuvable dans :\n{0}\n\nVoulez-vous indiquer le dossier de CSpect ?",
         "emuPick": "Sélectionnez le dossier contenant CSpect.exe",
@@ -402,6 +412,7 @@ STRINGS = {
         "showHiddenMenu": "Ausgeblendete Spiele anzeigen",
         "hiddenTag": "(ausgeblendet)",
         "delSavMenu": "Spielstände löschen (.sav)...",
+        "openFolderMenu": "Spielordner öffnen",
         "delSavConfirm": "{0} Spielstand-Datei(en) von {1} löschen?\n\n{2}\n\nDie Dateien werden in den Papierkorb verschoben.",
         "delSavDone": "Spielstände gelöscht: {0}",
         "delSavErr": "Löschen nicht möglich:\n{0}",
@@ -420,7 +431,7 @@ STRINGS = {
         "unplayable": "(nicht startbar)",
         "fileLine": "Datei: {0}\nParameter: {1}",
         "fileChoose": "Datei: wird beim ersten Start gewählt ({0} Programme)\nParameter: {1}",
-        "noFile": "Keine .nex/.snx/.sna/.bas/.tap-Datei - in games.ini festlegen",
+        "noFile": "Keine .nex/.snx/.sna/.bas/.tap/.z5-Datei - in games.ini festlegen",
         "status": "{0} von {1} Spielen   -   Enter/Doppelklick: spielen   Strg+1..5: Wertung   F5: neu laden   Esc: beenden",
         "launched": "Gestartet: {0}",
         "launchErr": "Fehler beim Start:\n{0}",
@@ -430,7 +441,7 @@ STRINGS = {
         "ok": "OK",
         "cancel": "Abbrechen",
         "saveErr": "Speichern in games.ini nicht möglich:\n{0}",
-        "noExeMsg": "Keine .nex / .snx / .sna / .bas / .tap-Datei gefunden in:\n{0}\n\nLege die zu startende Datei in games.ini fest (Schlüssel file=).",
+        "noExeMsg": "Keine .nex / .snx / .sna / .bas / .tap / .z5-Datei gefunden in:\n{0}\n\nLege die zu startende Datei in games.ini fest (Schlüssel file=).",
         "osTag": "(mit NextZXOS)",
         "osPrep": "NextZXOS wird für {0} vorbereitet...",
         "osNoImage": "SD-Karten-Image mit NextZXOS nicht gefunden:\n{0}\n\nEs wird zum Starten von .bas- und .tap-Dateien benötigt (meist zxnext.sd im CSpect-Ordner, erstellt von ZXOS.sh).\n\nMöchtest du es auswählen?",
@@ -444,6 +455,7 @@ STRINGS = {
         "osFilter": "SD-Karten-Images",
         "osNoTool": "hdfmonkey nicht gefunden:\n{0}\n\nEs ist bei CSpect dabei (Ordner hdfmonkey).",
         "osErr": "NextZXOS kann nicht vorbereitet werden:\n{0}",
+        "osNoZvm": "ZXZVM, der Z-Machine-Interpreter für die Textadventures .z3-.z8, wurde im SD-Karten-Image nicht gefunden:\n{0}\n\n(er liegt in C:/GAMES/Z-Machine/ZXZVM der NextZXOS-Distribution)",
         "osBadImage": "NextZXOS wurde im SD-Karten-Image nicht gefunden:\n{0}",
         "emuNotFound": "CSpect.exe nicht gefunden in:\n{0}\n\nMöchtest du den CSpect-Ordner auswählen?",
         "emuPick": "Wähle den Ordner mit CSpect.exe",
@@ -470,6 +482,9 @@ class Settings:
     lang = 'en'
     sort_mode = 'name'
     list_width = 368
+    win_size = None         # window= (width, height) saved on exit
+    win_max = False         # maximized=1
+    last_game = ''          # lastgame= section of the last game started
 
 
 S = Settings()
@@ -568,6 +583,8 @@ def new_ini_file(lang, games, cspect, gargs):
         ';  args=           CSpect parameters for all games',
         ';  sort=           list order: name or rating',
         ';  listwidth=      list width in pixels (also by dragging the divider)',
+        ';  window=         window size (WxH) and maximized=1, saved on exit',
+        ';  lastgame=       last game started, selected when the launcher opens',
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games',
         ';                  (default: zxnext.sd in the CSpect folder)',
         ';',
@@ -682,6 +699,10 @@ def load_settings():
     m = re.match(r'^\s*(\d+)\s*$', s.get('listwidth') or '')
     if m:
         S.list_width = max(200, min(1200, int(m.group(1))))
+    m = re.match(r'^\s*(\d+)\s*x\s*(\d+)\s*$', s.get('window') or '')
+    S.win_size = (int(m.group(1)), int(m.group(2))) if m else None
+    S.win_max = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('maximized') or '', re.I))
+    S.last_game = (s.get('lastgame') or '').strip()
     return ini
 
 
@@ -967,6 +988,16 @@ class FatImage:
                 res.append((name, bool(e[11] & 0x10), cl, int.from_bytes(e[28:32], 'little')))
         return res
 
+    def find_dir(self, path):
+        """First cluster of a folder given as a path from the root (e.g. 'GAMES/Z-Machine/ZXZVM'), or None."""
+        cluster = self.root
+        for part in path.split('/'):
+            e = next((x for x in self.read_dir(cluster) if x[1] and x[0].lower() == part.lower()), None)
+            if not e:
+                return None
+            cluster = e[2]
+        return cluster
+
     def copy_dir(self, cluster, dest):
         os.makedirs(dest, exist_ok=True)
         for name, is_dir, cl, size in self.read_dir(cluster):
@@ -1018,7 +1049,7 @@ def update_os_files(sd_image):
     d = os.path.join(OS_WORK, 'nextzxos')
     stamp_file = os.path.join(OS_WORK, 'nextzxos.txt')
     st = os.stat(sd_image)
-    stamp = '%s|%d|%d' % (os.path.abspath(sd_image), st.st_size, int(st.st_mtime))
+    stamp = '%s|%d|%d|%s' % (os.path.abspath(sd_image), st.st_size, int(st.st_mtime), ','.join(OS_DIRS + OS_OPT_DIRS))
     try:
         with open(stamp_file, encoding='utf-8') as f:
             if os.path.isdir(d) and f.read() == stamp:
@@ -1030,12 +1061,13 @@ def update_os_files(sd_image):
     try:
         fat = FatImage(sd_image)
         try:
-            root = fat.read_dir(fat.root)
-            for name in OS_DIRS:
-                e = next((x for x in root if x[1] and x[0].lower() == name.lower()), None)
-                if not e:
-                    raise ValueError('/' + name)
-                fat.copy_dir(e[2], os.path.join(d, name))
+            for path in OS_DIRS + OS_OPT_DIRS:
+                cluster = fat.find_dir(path)
+                if cluster is None:
+                    if path in OS_OPT_DIRS:
+                        continue
+                    raise ValueError('/' + path)
+                fat.copy_dir(cluster, os.path.join(d, path.split('/')[-1]))
         finally:
             fat.close()
     except (OSError, ValueError) as ex:
@@ -1051,29 +1083,76 @@ def update_os_files(sd_image):
     return d
 
 
-# autoexec.bas (+3DOS format): goes to c:/GAME and loads the game
-#   .bas:  .cd /game  -  LOAD "name.bas"
-#   .tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
-def make_autoexec(file_name, is_tap):
-    load = b'\xef'                          # LOAD token
-    name = file_name.encode('latin-1', 'replace')
-    lines = [b'.cd /game']
-    if is_tap:
-        lines += [b'.run ' + name, load + b'"t:":' + load + b'""']
-    else:
-        lines += [load + b'"' + name + b'"']
-    prog = b''
-    for i, body in enumerate(lines):
-        prog += (10 * (i + 1)).to_bytes(2, 'big') + (len(body) + 1).to_bytes(2, 'little') + body + b'\r'
+def basic_line(num, body):
+    """One BASIC line: number (big-endian), length, text, ENTER."""
+    return num.to_bytes(2, 'big') + (len(body) + 1).to_bytes(2, 'little') + body + b'\r'
+
+
+def basic_number(n):
+    """Number in a BASIC line: digits followed by its hidden 5-byte form (small integer)."""
+    return str(n).encode() + b'\x0e\x00\x00' + n.to_bytes(2, 'little') + b'\x00'
+
+
+def plus3_basic(prog, autostart):
+    """BASIC program file in +3DOS format (128-byte header), starting at line autostart."""
     h = bytearray(128)
     h[0:11] = b'PLUS3DOS\x1a\x01\x00'
     h[11:15] = (128 + len(prog)).to_bytes(4, 'little')
     h[15] = 0                                                   # BASIC program
     h[16:18] = len(prog).to_bytes(2, 'little')
-    h[18:20] = (10).to_bytes(2, 'little')                       # starts at line 10
+    h[18:20] = autostart.to_bytes(2, 'little')
     h[20:22] = len(prog).to_bytes(2, 'little')
     h[127] = sum(h[:127]) & 0xFF
     return bytes(h) + prog
+
+
+# autoexec.bas: goes to c:/GAME and loads the game
+#   bas:  .cd /game  -  LOAD "name.bas"
+#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  LOAD "t:": LOAD ""
+#   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by make_zvm_loader)
+def make_autoexec(file_name, mode):
+    load = b'\xef'                          # LOAD token
+    name = file_name.encode('latin-1', 'replace')
+    lines = [b'.cd /game']
+    if mode == 'tap':
+        lines += [b'.run ' + name, load + b'"t:":' + load + b'""']
+    elif mode == 'zvm':
+        lines += [load + b'"c:/zxzvm/run.bas"']
+    else:
+        lines += [load + b'"' + name + b'"']
+    return plus3_basic(b''.join(basic_line(10 * (i + 1), body) for i, body in enumerate(lines)), 10)
+
+
+# ZXZVM loader: a copy of ZXZVM's NXZXZVM.BAS that keeps the lines up to its autostart line
+# (CLEAR %$67ff) and then, instead of the welcome screen and the file chooser, does what
+# PROC story() does, with a key press already waiting so the story starts at once:
+#   PROC loadZXZVM("c:/zxzvm/"): PROC setup(): POKE 23560,13: LET f=PEEK 23611:
+#   IF INT (f/32)=2*INT (f/64) THEN POKE 23611,f+32
+#   PROC start("<file>"): ERASE
+# (ZXZVM's wait_key takes the key from LAST_K=23560 when bit 5 of FLAGS=23611 is set)
+def make_zvm_loader(bas_path, story):
+    with open(bas_path, 'rb') as f:
+        b = f.read()
+    if len(b) < 128 or b[:8] != b'PLUS3DOS':
+        raise ValueError('NXZXZVM.BAS?')
+    plen = int.from_bytes(b[16:18], 'little')
+    auto = int.from_bytes(b[18:20], 'little')
+    prog, i = b'', 128
+    while i + 4 <= 128 + plen:
+        num = int.from_bytes(b[i:i + 2], 'big')
+        length = int.from_bytes(b[i + 2:i + 4], 'little')
+        if num > auto:
+            break
+        prog += b[i:i + 4 + length]
+        i += 4 + length
+    PROC, POKE, LET, PEEK, IF, INT, THEN, ERASE = b'\x93', b'\xf4', b'\xf1', b'\xbe', b'\xfa', b'\xba', b'\xcb', b'\xd2'
+    n = basic_number
+    line1 = (PROC + b'loadZXZVM("c:/zxzvm/"):' + PROC + b'setup():' +
+             POKE + n(23560) + b',' + n(13) + b':' + LET + b'f=' + PEEK + n(23611) + b':' +
+             IF + INT + b'(f/' + n(32) + b')=' + n(2) + b'*' + INT + b'(f/' + n(64) + b')' +
+             THEN + POKE + n(23611) + b',f+' + n(32))
+    line2 = PROC + b'start("' + story.encode('latin-1', 'replace') + b'"):' + ERASE
+    return plus3_basic(prog + basic_line(auto + 10, line1) + basic_line(auto + 20, line2), auto)
 
 
 def file_in_use(path):
@@ -1098,7 +1177,11 @@ def file_in_use(path):
 def new_os_image(g, sd_image):
     """Creates the SD card image of the game and returns its path."""
     sysdir = update_os_files(sd_image)
-    is_tap = g.file.lower().endswith('.tap')
+    ext = os.path.splitext(g.file)[1].lower()
+    mode = 'tap' if ext == '.tap' else ('zvm' if ext in Z_EXTS else 'bas')
+    zvm_bas = os.path.join(sysdir, 'ZXZVM', 'NXZXZVM.BAS')
+    if mode == 'zvm' and not os.path.isfile(zvm_bas):
+        raise RuntimeError(T('osNoZvm', sd_image))
     exe_dir = os.path.dirname(g.file)
     name = os.path.basename(g.file)
     # some .tap files load other files from their folder: the whole folder is copied
@@ -1120,12 +1203,21 @@ def new_os_image(g, sd_image):
     run_hdfmonkey('mkdir', img, '/GAME')
     run_hdfmonkey('putdir', img, exe_dir, '/GAME')
     # .run does not accept names with spaces or symbols: in that case a copy as GAME.TAP
-    if is_tap and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
+    if mode == 'tap' and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
         run_hdfmonkey('put', img, g.file, '/GAME/GAME.TAP')
         name = 'GAME.TAP'
+    # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
+    if mode == 'zvm':
+        if not re.match(r'^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$', name):
+            name = 'STORY' + ext.upper()
+            run_hdfmonkey('put', img, g.file, '/GAME/' + name)
+        zl = os.path.join(OS_WORK, 'RUN.BAS')
+        with open(zl, 'wb') as f:
+            f.write(make_zvm_loader(zvm_bas, name))
+        run_hdfmonkey('put', img, zl, '/ZXZVM/RUN.BAS')
     ae = os.path.join(OS_WORK, 'AUTOEXEC.BAS')
     with open(ae, 'wb') as f:
-        f.write(make_autoexec(name, is_tap))
+        f.write(make_autoexec(name, mode))
     run_hdfmonkey('put', img, ae, '/NEXTZXOS/AUTOEXEC.BAS')
     return img
 
@@ -1325,7 +1417,42 @@ class Launcher:
         if self.search_var.get():
             self.search_var.set('')
         else:
-            self.root.destroy()
+            self._quit()
+
+    # ---------- window size (saved on exit) ----------
+    def _is_zoomed(self):
+        try:
+            if IS_WIN or IS_MAC:
+                return self.root.state() == 'zoomed'
+            return bool(self.root.attributes('-zoomed'))      # X11
+        except tk.TclError:
+            return False
+
+    def _set_zoomed(self):
+        try:
+            self.root.state('zoomed')
+        except tk.TclError:
+            try:
+                self.root.attributes('-zoomed', True)
+            except tk.TclError:
+                pass
+
+    def _root_configured(self, e):
+        """Keeps the normal (not maximized) window size, saved on exit also when maximized."""
+        if e.widget is self.root and not self._is_zoomed():
+            self._normal_size = (e.width, e.height)
+
+    def _quit(self):
+        zoomed = self._is_zoomed()
+        w, h = self._normal_size if zoomed and self._normal_size else (self.root.winfo_width(), self.root.winfo_height())
+        try:
+            set_ini_value('_default', 'window', '%dx%d' % (w, h))
+            set_ini_value('_default', 'maximized', '1' if zoomed else '')
+        except OSError:
+            pass
+        if getattr(self, '_pic_job', None):
+            self.root.after_cancel(self._pic_job)
+        self.root.destroy()
 
     def _move(self, d):
         if not self.view:
@@ -1523,7 +1650,7 @@ class Launcher:
             if new != g.image:
                 g.image = new
                 self.set_picture(new)
-        self.root.after(2000, self._check_picture)
+        self._pic_job = self.root.after(2000, self._check_picture)
 
     def _set_icon(self):
         if not HAVE_PIL:
@@ -1583,6 +1710,12 @@ class Launcher:
             subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.status.config(text=T('launched', g.title))
+            # selected again the next time the launcher opens
+            S.last_game = g.section
+            try:
+                set_ini_value('_default', 'lastgame', g.section)
+            except OSError:
+                pass
         except OSError as ex:
             messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
         return 'break'
@@ -1964,11 +2097,26 @@ class Launcher:
         m.add_command(label=T('unhideMenu') if g.hidden else T('hideMenu'), command=lambda: self._hide(g))
         m.add_command(label=T('delSavMenu'), command=lambda: self._del_saves(g),
                       state='normal' if get_save_files(g) else 'disabled')
+        m.add_command(label=T('openFolderMenu'), command=lambda: self._open_folder(g))
         m.add_separator()
         self.show_hidden_var.set(self.show_hidden)
         m.add_checkbutton(label=T('showHiddenMenu'), variable=self.show_hidden_var, command=self._toggle_hidden,
                           selectcolor=C_TEXT)
         m.tk_popup(e.x_root, e.y_root)
+
+    def _open_folder(self, g):
+        """Opens the game folder in the file manager (on Windows and macOS with the executable selected)."""
+        f = g.file if g.file and os.path.isfile(g.file) else None
+        if IS_WIN:
+            cmd = ['explorer', '/select,' + f] if f else ['explorer', g.folder]
+        elif IS_MAC:
+            cmd = ['open', '-R', f] if f else ['open', g.folder]
+        else:
+            cmd = ['xdg-open', g.folder]
+        try:
+            subprocess.Popen(cmd, start_new_session=not IS_WIN, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError as ex:
+            messagebox.showerror(APP_NAME, T('launchErr', ex), parent=self.root)
 
     def _choose(self, g):
         if self.select_executable(g):
@@ -2042,9 +2190,22 @@ class Launcher:
             self.root.deiconify()
         self.reload_all()
         self.paned.paneconfigure(self.left, width=S.list_width)
-        self.root.geometry('%dx600' % max(960, S.list_width + 600))
+        # window size saved on exit (at most as big as the screen)
+        w, h = S.win_size or (960, 600)
+        w = max(w, S.list_width + 600)
+        w, h = min(w, self.root.winfo_screenwidth()), min(h, self.root.winfo_screenheight())
+        self.root.geometry('%dx%d' % (w, h))
+        self._normal_size = (w, h)
+        self.root.bind('<Configure>', self._root_configured, add='+')
+        if S.win_max:
+            self._set_zoomed()
+        self.root.protocol('WM_DELETE_WINDOW', self._quit)
+        # the last game started is selected again
+        i = next((i for i, g in enumerate(self.view) if g.section.lower() == S.last_game.lower()), -1) if S.last_game else -1
+        if i >= 0:
+            self.select_index(i)
         self.txt_search.focus_set()
-        self.root.after(2000, self._check_picture)
+        self._pic_job = self.root.after(2000, self._check_picture)
         self.root.mainloop()
 
 

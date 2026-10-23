@@ -3,6 +3,12 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## 1.3.1
+
+- The window size is remembered on exit and the last game started is selected when the launcher opens
+- Right-click menu: "Open game folder" opens the game's folder with the executable selected
+- Z-machine text adventures (.z3, .z4, .z5, .z7, .z8) start automatically through NextZXOS with the ZXZVM interpreter
+
 ## 1.3
 
 - Experimental macOS support in the Linux version (start with cspect-launcher.command; not yet tested on a Mac)
