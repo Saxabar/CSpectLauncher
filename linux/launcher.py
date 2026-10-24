@@ -48,7 +48,7 @@ except Exception:
 
 # ---------- program information ----------
 APP_NAME = 'CSpect Launcher'
-APP_VERSION = '1.4'
+APP_VERSION = '1.5'
 APP_COPYRIGHT = '(c) 2026 Giuseppe Papa - GPL-3.0'
 APP_URL = 'https://github.com/Saxabar/CSpectLauncher'
 CSPECT_URL = 'https://mdf200.itch.io/cspect'
@@ -117,6 +117,12 @@ STRINGS = {
         "osSaved": "Saved files copied to the game folder: {0}",
         "favAdd": "Add to favorites",
         "favRemove": "Remove from favorites",
+        "tap48Menu": "Load in 48K mode",
+        "compatMenu": "CSpect 3 compatibility",
+        "compatL2": "Layer 2 at bank 9 (as in CSpect 2)",
+        "compatDiv": "DivMMC automap off",
+        "compatDd01": "DD 01 breakpoints as NOP (as in CSpect 2)",
+        "compatZero": "RAM cleared at start (as in CSpect 2)",
         "favTip": "Show only favorite games",
         "delSavConfirm": "Delete {0} save file(s) of {1}?\n\n{2}\n\nThe files are moved to the Trash.",
         "delSavDone": "Save files deleted: {0}",
@@ -200,6 +206,12 @@ STRINGS = {
         "osSaved": "File salvati copiati nella cartella del gioco: {0}",
         "favAdd": "Aggiungi ai preferiti",
         "favRemove": "Togli dai preferiti",
+        "tap48Menu": "Carica in modalità 48K",
+        "compatMenu": "Compatibilità CSpect 3",
+        "compatL2": "Layer 2 al banco 9 (come in CSpect 2)",
+        "compatDiv": "Mappatura automatica DivMMC spenta",
+        "compatDd01": "Breakpoint DD 01 come NOP (come in CSpect 2)",
+        "compatZero": "RAM azzerata all'avvio (come in CSpect 2)",
         "favTip": "Mostra solo i giochi preferiti",
         "delSavConfirm": "Eliminare {0} file di salvataggio di {1}?\n\n{2}\n\nI file vengono spostati nel Cestino.",
         "delSavDone": "Salvataggi eliminati: {0}",
@@ -283,6 +295,12 @@ STRINGS = {
         "osSaved": "Archivos guardados copiados en la carpeta del juego: {0}",
         "favAdd": "Añadir a favoritos",
         "favRemove": "Quitar de favoritos",
+        "tap48Menu": "Cargar en modo 48K",
+        "compatMenu": "Compatibilidad CSpect 3",
+        "compatL2": "Layer 2 en el banco 9 (como en CSpect 2)",
+        "compatDiv": "Mapeo automático DivMMC desactivado",
+        "compatDd01": "Breakpoints DD 01 como NOP (como en CSpect 2)",
+        "compatZero": "RAM a cero al inicio (como en CSpect 2)",
         "favTip": "Mostrar solo los juegos favoritos",
         "delSavConfirm": "¿Borrar {0} archivo(s) de partida de {1}?\n\n{2}\n\nLos archivos se mueven a la Papelera.",
         "delSavDone": "Partidas borradas: {0}",
@@ -366,6 +384,12 @@ STRINGS = {
         "osSaved": "Fichiers sauvegardés copiés dans le dossier du jeu : {0}",
         "favAdd": "Ajouter aux favoris",
         "favRemove": "Retirer des favoris",
+        "tap48Menu": "Charger en mode 48K",
+        "compatMenu": "Compatibilité CSpect 3",
+        "compatL2": "Layer 2 à la banque 9 (comme dans CSpect 2)",
+        "compatDiv": "Mappage automatique DivMMC désactivé",
+        "compatDd01": "Points d'arrêt DD 01 en NOP (comme dans CSpect 2)",
+        "compatZero": "RAM remise à zéro au démarrage (comme dans CSpect 2)",
         "favTip": "Afficher seulement les jeux favoris",
         "delSavConfirm": "Supprimer {0} fichier(s) de sauvegarde de {1} ?\n\n{2}\n\nLes fichiers sont placés dans la Corbeille.",
         "delSavDone": "Sauvegardes supprimées : {0}",
@@ -449,6 +473,12 @@ STRINGS = {
         "osSaved": "Gespeicherte Dateien in den Spielordner kopiert: {0}",
         "favAdd": "Zu Favoriten hinzufügen",
         "favRemove": "Aus Favoriten entfernen",
+        "tap48Menu": "Im 48K-Modus laden",
+        "compatMenu": "CSpect-3-Kompatibilität",
+        "compatL2": "Layer 2 auf Bank 9 (wie in CSpect 2)",
+        "compatDiv": "Automatisches DivMMC-Mapping aus",
+        "compatDd01": "DD-01-Haltepunkte als NOP (wie in CSpect 2)",
+        "compatZero": "RAM beim Start gelöscht (wie in CSpect 2)",
         "favTip": "Nur Lieblingsspiele anzeigen",
         "delSavConfirm": "{0} Spielstand-Datei(en) von {1} löschen?\n\n{2}\n\nDie Dateien werden in den Papierkorb verschoben.",
         "delSavDone": "Spielstände gelöscht: {0}",
@@ -523,6 +553,7 @@ class Settings:
     win_max = False         # maximized=1
     last_game = ''          # lastgame= section of the last game started
     fav_only = False        # favonly=1 show only the favorite games
+    show_hidden = None      # showhidden=1 also show the hidden games (read once at startup, saved on exit)
 
 
 S = Settings()
@@ -624,12 +655,15 @@ def new_ini_file(lang, games, cspect, gargs):
         ';  window=         window size (WxH) and maximized=1, saved on exit',
         ';  lastgame=       last game started, selected when the launcher opens',
         ';  favonly=1       show only the favorite games (heart button)',
+        ';  showhidden=1    also show the hidden games (right-click menu), saved on exit',
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games',
         ';                  (default: zxnext.sd in the CSpect folder)',
         ';',
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),',
         ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx',
-        ';  with NextZXOS), title= image= args= optional',
+        ';  with NextZXOS), tapmode=48 (load a .tap in 48K mode),',
+        ';  compat=l2bank9,nodivmmc,dd01nop,zeroram (fixes of the CSpect Compat plugin for old games in CSpect 3),',
+        ';  title= image= args= optional',
         '; ============================================================',
         '',
         '[_default]',
@@ -744,6 +778,9 @@ def load_settings():
     S.win_max = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('maximized') or '', re.I))
     S.last_game = (s.get('lastgame') or '').strip()
     S.fav_only = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('favonly') or '', re.I))
+    # read only at startup: it is saved on exit, so later reloads must not undo the menu choice
+    if S.show_hidden is None:
+        S.show_hidden = bool(re.match(r'^\s*(1|yes|true)\s*$', s.get('showhidden') or '', re.I))
     return ini
 
 
@@ -754,17 +791,34 @@ class Game:
     pass
 
 
+def test_plus3_program(path):
+    """NextBASIC program saved without extension (e.g. Vice City Blues): +3DOS header of type 0 (program)."""
+    if os.path.splitext(path)[1]:
+        return False
+    try:
+        with open(path, 'rb') as f:
+            h = f.read(16)
+    except OSError:
+        return False
+    return len(h) == 16 and h[:8] == b'PLUS3DOS' and h[15] == 0
+
+
 def get_candidates(folder):
     """Executables in the game folder and its subfolders (relative paths, main folder first);
-    .bas/.tap files (started with NextZXOS) only when there is no .nex/.snx/.sna"""
+    .bas/.tap files and BASIC programs without extension (started with NextZXOS) only when there is
+    no .nex/.snx/.sna. A file named like the folder comes first (e.g. ViceCityBlues before Day1...)"""
     found = []
     for dirpath, dirnames, files in os.walk(folder):
         for f in files:
             found.append(os.path.relpath(os.path.join(dirpath, f), folder).replace(os.sep, '/'))
+    folder_key = re.sub(r'[^A-Za-z0-9]', '', os.path.basename(os.path.normpath(folder))).lower()
     for exts in (GAME_EXTS, OS_EXTS):
-        res = [r for r in found if os.path.splitext(r)[1].lower() in exts]
+        res = [r for r in found if os.path.splitext(r)[1].lower() in exts or
+               (exts is OS_EXTS and test_plus3_program(os.path.join(folder, r)))]
         if res:
-            res.sort(key=lambda r: (r.count('/'), r.lower()))
+            res.sort(key=lambda r: (r.count('/'),
+                                    re.sub(r'[^A-Za-z0-9]', '', os.path.splitext(os.path.basename(r))[0]).lower() != folder_key,
+                                    r.lower()))
             return res
     return []
 
@@ -886,6 +940,8 @@ def get_games():
         g.favorite = bool(re.match(r'^\s*(1|yes|true)\s*$', cfg.get('favorite', ''), re.I))
         g.ask_file = bool(re.match(r'^\s*(1|yes|true)\s*$', cfg.get('askfile', ''), re.I))
         g.boot_os = bool(re.match(r'^\s*nextzxos\s*$', cfg.get('boot', ''), re.I))
+        g.tap48 = bool(re.match(r'^\s*48\s*$', cfg.get('tapmode', '')))
+        g.compat = cfg.get('compat', '').strip()
         g.image_cfg = cfg.get('image', '')
         g.image = find_image(d.path, g.image_cfg, g.file)
         update_display(g)
@@ -1155,17 +1211,27 @@ def plus3_basic(prog, autostart):
 
 # autoexec.bas: goes to c:/GAME and loads the game
 #   bas:  .cd /game  -  LOAD "name.bas"
-#   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  SPECTRUM LOAD (NextZXOS Tape Loader in
-#         128K compatibility mode: also works with loaders that call the ROM LD-BYTES routine, e.g. Tokimal)
+#   tap:  .cd /game  -  .tapein name.tap (as the Browser's TAP Loader does: also serves the loaders that call
+#         the ROM tape routine directly)  -  SPECTRUM LOAD (NextZXOS Tape Loader in 128K mode, e.g. Tokimal)
+#   tap48: .cd /game  -  .tapein name.tap  -  USR 0 mode in 48K with the tape loader of usr0.bin
+#         (as the TAP Loader's 48K mode: SPECTRUM 48: OUT 9275,36: POKE 61440,b: LET x=USR 61441,
+#         b = 1 when the first block of the tape is a CODE header)
 #   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by make_zvm_loader)
 #   nex:  .cd /game  -  .nexload name.nex
 #   snx:  .cd /game  -  SPECTRUM "name.snx"
-def make_autoexec(file_name, mode):
+def make_autoexec(file_name, mode, code_first=0):
     load = b'\xef'                          # LOAD token
     name = file_name.encode('latin-1', 'replace')
+    n = basic_number
     lines = [b'.cd /game']
     if mode == 'tap':
-        lines += [b'.run ' + name, b'\xa3' + load]                 # SPECTRUM LOAD
+        lines += [b'.tapein ' + name, b'\xa3' + load]              # SPECTRUM LOAD
+    elif mode == 'tap48':
+        lines += [b'.tapein ' + name,
+                  load + b'"c:/nextzxos/usr0.bin"' + b'\xaf' + n(61440),                       # LOAD ... CODE
+                  b'\xa3' + n(48) + b':' + b'\xdf' + n(9275) + b',' + n(36) + b':' +          # SPECTRUM 48: OUT
+                  b'\xf4' + n(61440) + b',' + n(code_first) + b':' +                          # POKE
+                  b'\xf1' + b'x=' + b'\xc0' + n(61441)]                                       # LET x=USR
     elif mode == 'zvm':
         lines += [load + b'"c:/zxzvm/run.bas"']
     elif mode == 'nex':
@@ -1233,6 +1299,14 @@ def new_os_image(g, sd_image):
     sysdir = update_os_files(sd_image)
     ext = os.path.splitext(g.file)[1].lower()
     mode = {'.tap': 'tap', '.nex': 'nex', '.snx': 'snx'}.get(ext, 'zvm' if ext in Z_EXTS else 'bas')
+    code_first = 0
+    if mode == 'tap' and g.tap48:
+        mode = 'tap48'
+        # first block of the tape: a header (flag 0) of CODE (type 3) or of a program (type 0)
+        with open(g.file, 'rb') as f:
+            head = f.read(4)
+        if len(head) == 4 and head[2] == 0 and head[3] == 3:
+            code_first = 1
     copies = []                             # extra copies in c:/GAME, not saves of the game
     zvm_bas = os.path.join(sysdir, 'ZXZVM', 'NXZXZVM.BAS')
     if mode == 'zvm' and not os.path.isfile(zvm_bas):
@@ -1259,11 +1333,25 @@ def new_os_image(g, sd_image):
     run_hdfmonkey('putdir', img, sysdir, '/')
     run_hdfmonkey('mkdir', img, '/GAME')
     run_hdfmonkey('putdir', img, exe_dir, '/GAME')
-    # .run and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
-    if mode in ('tap', 'nex') and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
+    # .tapein and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
+    if mode in ('tap', 'tap48', 'nex') and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
         name = 'GAME' + ext.upper()
         run_hdfmonkey('put', img, g.file, '/GAME/' + name)
         copies.append(name)
+    # BASIC programs saved without autostart (e.g. Orb Run) would only be loaded, not started:
+    # a copy as GAME.BAS that starts from its first line
+    if mode == 'bas':
+        with open(g.file, 'rb') as f:
+            b = bytearray(f.read())
+        if len(b) >= 130 and b[:8] == b'PLUS3DOS' and b[15] == 0 and int.from_bytes(b[18:20], 'little') >= 32768:
+            b[18:20] = (b[128] * 256 + b[129]).to_bytes(2, 'little')       # line numbers are big-endian
+            b[127] = sum(b[:127]) & 0xFF                                     # header checksum
+            name = 'GAME.BAS'
+            gb = os.path.join(OS_WORK, name)
+            with open(gb, 'wb') as f:
+                f.write(b)
+            run_hdfmonkey('put', img, gb, '/GAME/' + name)
+            copies.append(name)
     # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
     if mode == 'zvm':
         if not re.match(r'^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$', name):
@@ -1276,7 +1364,7 @@ def new_os_image(g, sd_image):
         run_hdfmonkey('put', img, zl, '/ZXZVM/RUN.BAS')
     ae = os.path.join(OS_WORK, 'AUTOEXEC.BAS')
     with open(ae, 'wb') as f:
-        f.write(make_autoexec(name, mode))
+        f.write(make_autoexec(name, mode, code_first))
     run_hdfmonkey('put', img, ae, '/NEXTZXOS/AUTOEXEC.BAS')
     return {'img': img, 'dir': exe_dir, 'copies': copies}
 
@@ -1343,12 +1431,24 @@ def complete_os_runs():
     return total
 
 
+# fixes of the CSpect Compat plugin: option -> menu text. l2bank9 = Layer 2 at bank 9 as in CSpect 2
+# (e.g. Montana Mike), nodivmmc = DivMMC automap off (e.g. Deltas Shadow), dd01nop = DD 01 debugger
+# breakpoints in the .nex as NOPs (e.g. Elite Next), zeroram = RAM cleared as in CSpect 2 (e.g. Spice Invaderz)
+COMPAT_OPTIONS = {'l2bank9': 'compatL2', 'nodivmmc': 'compatDiv', 'dd01nop': 'compatDd01', 'zeroram': 'compatZero'}
+
+
+def compat_list(g):
+    """Options of the CSpect Compat plugin for a game (compat=, comma-separated)."""
+    return [o.strip().lower() for o in (g.compat or '').split(',') if o.strip()]
+
+
 def test_os_launch(g):
-    """True if the game is started through NextZXOS: .bas/.tap/.z?, or a .nex/.snx with boot=nextzxos."""
+    """True if the game is started through NextZXOS: .bas/.tap/.z? or a BASIC program without
+    extension, or a .nex/.snx with boot=nextzxos."""
     if not g.file:
         return False
     ext = os.path.splitext(g.file)[1].lower()
-    return ext in OS_EXTS or (g.boot_os and ext in OS_NEX_EXTS)
+    return ext in OS_EXTS or (g.boot_os and ext in OS_NEX_EXTS) or test_plus3_program(g.file)
 
 
 # ============================================================
@@ -1359,7 +1459,6 @@ class Launcher:
         self.root = root
         self.games = []
         self.view = []          # games currently shown in the list
-        self.show_hidden = False
         self.photo = None
         self.pil_image = None
         self._resize_job = None
@@ -1375,7 +1474,7 @@ class Launcher:
         self.f_play = (base, 12, 'bold')
         self.f_mono = ('Menlo' if IS_MAC else 'DejaVu Sans Mono', 10)
 
-        root.title(APP_NAME + ' - ZX Spectrum Next')
+        root.title(APP_NAME + ' ' + APP_VERSION + ' - ZX Spectrum Next')
         root.geometry('960x600')
         root.minsize(700, 420)
         root.configure(bg=C_BACK)
@@ -1527,6 +1626,8 @@ class Launcher:
                             activeforeground='white', disabledforeground='#666', relief='flat', font=self.f_norm)
         self.show_hidden_var = tk.BooleanVar(value=False)
         self.boot_os_var = tk.BooleanVar(value=False)
+        self.tap48_var = tk.BooleanVar(value=False)
+        self.compat_vars = {o: tk.BooleanVar(value=False) for o in COMPAT_OPTIONS}
 
     def _draw_stripe(self, e=None):
         c = self.stripe
@@ -1586,6 +1687,7 @@ class Launcher:
         try:
             set_ini_value('_default', 'window', '%dx%d' % (w, h))
             set_ini_value('_default', 'maximized', '1' if zoomed else '')
+            set_ini_value('_default', 'showhidden', '1' if S.show_hidden else '')
         except OSError:
             pass
         for job in (getattr(self, '_pic_job', None), self._os_watch):
@@ -1636,7 +1738,7 @@ class Launcher:
     def refresh_list(self):
         q = self.search_var.get().strip().lower()
         keep = self.selected()
-        items = [g for g in self.games if (not q or q in g.title.lower()) and (self.show_hidden or not g.hidden)
+        items = [g for g in self.games if (not q or q in g.title.lower()) and (S.show_hidden or not g.hidden)
                  and (not S.fav_only or g.favorite)]
         if S.sort_mode == 'rating':
             items.sort(key=lambda g: (-g.rating, g.title.lower()))
@@ -1727,9 +1829,13 @@ class Launcher:
         self.lbl_title.config(text=g.title)
         if g.file:
             a = g.args + ('  ' + T('customTag') if g.args_cfg else '')
+            if g.compat:
+                a += '  [Compat: ' + g.compat + ']'
             rel = os.path.relpath(g.file, g.folder).replace(os.sep, '/')
             if test_os_launch(g):
                 rel += '  ' + T('osTag')
+            if g.tap48 and g.file.lower().endswith('.tap'):
+                rel += '  (48K)'
             if g.ask_file and len(g.candidates) > 1:
                 rel += '  ' + T('askTag')
             self.lbl_file.config(text=T('fileLine', rel, a))
@@ -1852,8 +1958,12 @@ class Launcher:
             # save files and screenshots end up next to the game
             work_dir = os.path.dirname(g.file)
             cmd += [S.emulator] + split_args(g.args) + ['./' + os.path.basename(g.file)]
+        # fixes of the CSpect Compat plugin (Compat.dll next to CSpect.exe); ignored when it is not installed
+        env = None
+        if g.compat:
+            env = dict(os.environ, CSPECT_COMPAT=g.compat, CSPECT_COMPAT_FILE=g.file)   # dd01nop reads the .nex
         try:
-            proc = subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN,
+            proc = subprocess.Popen(cmd, cwd=work_dir, start_new_session=not IS_WIN, env=env,
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             self.status.config(text=T('launched', g.title))
             # NextZXOS games: when CSpect closes, the files saved in the image go back to the game folder
@@ -2262,7 +2372,6 @@ class Launcher:
                       state='normal' if g.candidates else 'disabled')
         m.add_command(label=T('argsMenu'), command=lambda: self._args(g))
         m.add_command(label=T('renameMenu'), command=lambda: self._rename(g))
-        m.add_command(label=HEART + '  ' + (T('favRemove') if g.favorite else T('favAdd')), command=lambda: self._favorite(g))
         m.add_command(label=T('unhideMenu') if g.hidden else T('hideMenu'), command=lambda: self._hide(g))
         m.add_command(label=T('delSavMenu'), command=lambda: self._del_saves(g),
                       state='normal' if get_save_files(g) else 'disabled')
@@ -2271,10 +2380,28 @@ class Launcher:
         nex = any(os.path.splitext(c)[1].lower() in OS_NEX_EXTS for c in g.candidates)
         m.add_checkbutton(label=T('osMenu'), variable=self.boot_os_var, command=lambda: self._boot_os(g),
                           state='normal' if nex else 'disabled', selectcolor=C_TEXT)
+        # only for .tap games: the chosen executable, or any candidate when none is chosen yet
+        if g.file:
+            is_tap = g.file.lower().endswith('.tap')
+        else:
+            is_tap = any(c.lower().endswith('.tap') for c in g.candidates)
+        if is_tap:
+            self.tap48_var.set(g.tap48)
+            m.add_checkbutton(label=T('tap48Menu'), variable=self.tap48_var, command=lambda: self._tap48(g),
+                              selectcolor=C_TEXT)
+        sub = tk.Menu(m, tearoff=0, bg=C_PANEL, fg=C_TEXT, activebackground='#0078d7', activeforeground='white')
+        current = compat_list(g)
+        for opt, key in COMPAT_OPTIONS.items():
+            self.compat_vars[opt].set(opt in current)
+            sub.add_checkbutton(label=T(key), variable=self.compat_vars[opt], selectcolor=C_TEXT,
+                                command=lambda o=opt: self._switch_compat(g, o))
+        m.add_cascade(label=T('compatMenu'), menu=sub)
         m.add_separator()
-        self.show_hidden_var.set(self.show_hidden)
+        self.show_hidden_var.set(S.show_hidden)
         m.add_checkbutton(label=T('showHiddenMenu'), variable=self.show_hidden_var, command=self._toggle_hidden,
                           selectcolor=C_TEXT)
+        m.add_separator()
+        m.add_command(label=HEART + '  ' + (T('favRemove') if g.favorite else T('favAdd')), command=lambda: self._favorite(g))
         m.tk_popup(e.x_root, e.y_root)
 
     def _open_folder(self, g):
@@ -2341,6 +2468,27 @@ class Launcher:
             messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
         self.show_game(g)
 
+    def _tap48(self, g):
+        """.tap loaded in 48K mode instead of 128K (tapmode=48), for games that need it."""
+        g.tap48 = self.tap48_var.get()
+        try:
+            set_ini_value(g.section, 'tapmode', '48' if g.tap48 else '')
+        except OSError as ex:
+            messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
+        self.show_game(g)
+
+    def _switch_compat(self, g, opt):
+        """Fixes of the CSpect Compat plugin for old games that crash in CSpect 3 (compat=, comma-separated)."""
+        current = [o for o in compat_list(g) if o != opt]
+        if self.compat_vars[opt].get():
+            current.append(opt)
+        g.compat = ','.join(current)
+        try:
+            set_ini_value(g.section, 'compat', g.compat)
+        except OSError as ex:
+            messagebox.showwarning(APP_NAME, T('saveErr', ex), parent=self.root)
+        self.show_game(g)
+
     def _fav_filter(self):
         """Heart button: shows only the favorite games (favonly=1, remembered)."""
         S.fav_only = self.fav_var.get()
@@ -2361,7 +2509,7 @@ class Launcher:
         self.refresh_list()
 
     def _toggle_hidden(self):
-        self.show_hidden = self.show_hidden_var.get()
+        S.show_hidden = self.show_hidden_var.get()
         self.refresh_list()
 
     def _del_saves(self, g):

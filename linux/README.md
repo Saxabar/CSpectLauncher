@@ -1,7 +1,7 @@
 # CSpect Launcher for Linux and macOS
 
 The Linux and macOS version of **CSpect Launcher**, the game launcher for the ZX Spectrum Next emulator CSpect. For macOS see the [macOS section](#macos) below.
-Version 1.4 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
+Version 1.5 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
 
 ![CSpect Launcher for Linux](screenshot-linux.png)
 
@@ -93,6 +93,7 @@ Categories=Game;Emulator;
 - "Open game folder" opens the game folder in your file manager (with `xdg-open`).
 - File names on Linux are case sensitive; the launcher still recognises extensions such as `.NEX` or `.SAV` in upper case.
 - `.bas` and `.tap` games (started through NextZXOS, see the main README) use the Linux build of hdfmonkey included with CSpect (`hdfmonkey/linux-musl/hdfmonkey`, made executable automatically if needed). The NextZXOS files and the temporary SD card images are kept in `~/.cache/cspect-launcher`. The SD card image is the `zxnext.sd` downloaded by CSpect's `ZXOS.sh`; if it is missing, the launcher offers to run `ZXOS.sh` (with `bash`) to download it.
+- The **CSpect 3 compatibility** fixes (right-click menu) are passed to CSpect in the `CSPECT_COMPAT` variable, as on Windows. They need the [CSpect Compat](https://github.com/Saxabar/CSpectCompat) plugin next to `CSpect.exe`; it is a plain .NET plugin, but it has not been tested with mono yet.
 
 ## macOS
 

@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle 
 
 # ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.4'
+$AppVersion   = '1.5'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'
@@ -51,7 +51,7 @@ $script:ListWidth      = 368                                    # listwidth=
 $script:WinSize        = $null                                  # window=  (WxH saved on exit)
 $script:WinMax         = $false                                 # maximized=1
 $script:LastGame       = ''                                     # lastgame=  (section of the last game started)
-$script:ShowHidden     = $false                                 # also show hidden games (this session only)
+$script:ShowHidden     = $false                                 # showhidden=1  (also show hidden games, saved on exit)
 $script:FavOnly        = $false                                 # favonly=1  (show only favorite games)
 
 # ============================================================
@@ -72,6 +72,7 @@ $script:Strings = @{
     chooseAlways = 'Always use this executable'; askTag = '(asked at every launch)'
     osMenu = 'Start with NextZXOS'; osSaved = 'Saved files copied to the game folder: {0}'
     favAdd = 'Add to favorites'; favRemove = 'Remove from favorites'; favTip = 'Show only favorite games'
+    tap48Menu = 'Load in 48K mode'; compatMenu = 'CSpect 3 compatibility'; compatL2 = 'Layer 2 at bank 9 (as in CSpect 2)'; compatDiv = 'DivMMC automap off'; compatDd01 = 'DD 01 breakpoints as NOP (as in CSpect 2)'; compatZero = 'RAM cleared at start (as in CSpect 2)'
     delSavConfirm = "Delete {0} save file(s) of {1}?`n`n{2}`n`nThe files are moved to the Recycle Bin."
     delSavDone = 'Save files deleted: {0}'; delSavErr = "Cannot delete:`n{0}"
     info = 'Info'; aboutTitle = 'About'; aboutVersion = 'Version {0}'
@@ -122,6 +123,7 @@ $script:Strings = @{
     chooseAlways = 'Usa sempre questo eseguibile'; askTag = '(chiesto a ogni avvio)'
     osMenu = 'Avvia con NextZXOS'; osSaved = 'File salvati copiati nella cartella del gioco: {0}'
     favAdd = 'Aggiungi ai preferiti'; favRemove = 'Togli dai preferiti'; favTip = 'Mostra solo i giochi preferiti'
+    tap48Menu = 'Carica in modalità 48K'; compatMenu = 'Compatibilità CSpect 3'; compatL2 = 'Layer 2 al banco 9 (come in CSpect 2)'; compatDiv = 'Mappatura automatica DivMMC spenta'; compatDd01 = 'Breakpoint DD 01 come NOP (come in CSpect 2)'; compatZero = 'RAM azzerata all''avvio (come in CSpect 2)'
     delSavConfirm = "Eliminare {0} file di salvataggio di {1}?`n`n{2}`n`nI file vengono spostati nel Cestino."
     delSavDone = 'Salvataggi eliminati: {0}'; delSavErr = "Impossibile eliminare:`n{0}"
     info = 'Info'; aboutTitle = 'Informazioni'; aboutVersion = 'Versione {0}'
@@ -172,6 +174,7 @@ $script:Strings = @{
     chooseAlways = 'Usar siempre este ejecutable'; askTag = '(se pregunta en cada inicio)'
     osMenu = 'Iniciar con NextZXOS'; osSaved = 'Archivos guardados copiados en la carpeta del juego: {0}'
     favAdd = 'Añadir a favoritos'; favRemove = 'Quitar de favoritos'; favTip = 'Mostrar solo los juegos favoritos'
+    tap48Menu = 'Cargar en modo 48K'; compatMenu = 'Compatibilidad CSpect 3'; compatL2 = 'Layer 2 en el banco 9 (como en CSpect 2)'; compatDiv = 'Mapeo automático DivMMC desactivado'; compatDd01 = 'Breakpoints DD 01 como NOP (como en CSpect 2)'; compatZero = 'RAM a cero al inicio (como en CSpect 2)'
     delSavConfirm = "¿Borrar {0} archivo(s) de partida de {1}?`n`n{2}`n`nLos archivos se mueven a la Papelera de reciclaje."
     delSavDone = 'Partidas borradas: {0}'; delSavErr = "No se puede borrar:`n{0}"
     info = 'Info'; aboutTitle = 'Acerca de'; aboutVersion = 'Versión {0}'
@@ -222,6 +225,7 @@ $script:Strings = @{
     chooseAlways = 'Toujours utiliser cet exécutable'; askTag = '(demandé à chaque lancement)'
     osMenu = 'Lancer avec NextZXOS'; osSaved = 'Fichiers sauvegardés copiés dans le dossier du jeu : {0}'
     favAdd = 'Ajouter aux favoris'; favRemove = 'Retirer des favoris'; favTip = 'Afficher seulement les jeux favoris'
+    tap48Menu = 'Charger en mode 48K'; compatMenu = 'Compatibilité CSpect 3'; compatL2 = 'Layer 2 à la banque 9 (comme dans CSpect 2)'; compatDiv = 'Mappage automatique DivMMC désactivé'; compatDd01 = 'Points d''arrêt DD 01 en NOP (comme dans CSpect 2)'; compatZero = 'RAM remise à zéro au démarrage (comme dans CSpect 2)'
     delSavConfirm = "Supprimer {0} fichier(s) de sauvegarde de {1} ?`n`n{2}`n`nLes fichiers sont placés dans la Corbeille."
     delSavDone = 'Sauvegardes supprimées : {0}'; delSavErr = "Impossible de supprimer :`n{0}"
     info = 'Infos'; aboutTitle = 'À propos'; aboutVersion = 'Version {0}'
@@ -272,6 +276,7 @@ $script:Strings = @{
     chooseAlways = 'Dieses Programm immer verwenden'; askTag = '(wird bei jedem Start gefragt)'
     osMenu = 'Mit NextZXOS starten'; osSaved = 'Gespeicherte Dateien in den Spielordner kopiert: {0}'
     favAdd = 'Zu Favoriten hinzufügen'; favRemove = 'Aus Favoriten entfernen'; favTip = 'Nur Lieblingsspiele anzeigen'
+    tap48Menu = 'Im 48K-Modus laden'; compatMenu = 'CSpect-3-Kompatibilität'; compatL2 = 'Layer 2 auf Bank 9 (wie in CSpect 2)'; compatDiv = 'Automatisches DivMMC-Mapping aus'; compatDd01 = 'DD-01-Haltepunkte als NOP (wie in CSpect 2)'; compatZero = 'RAM beim Start gelöscht (wie in CSpect 2)'
     delSavConfirm = "{0} Spielstand-Datei(en) von {1} löschen?`n`n{2}`n`nDie Dateien werden in den Papierkorb verschoben."
     delSavDone = 'Spielstände gelöscht: {0}'; delSavErr = "Löschen nicht möglich:`n{0}"
     info = 'Info'; aboutTitle = 'Über'; aboutVersion = 'Version {0}'
@@ -381,12 +386,15 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
         ';  window=         window size (WxH) and maximized=1, saved on exit'
         ';  lastgame=       last game started, selected when the launcher opens'
         ';  favonly=1       show only the favorite games (heart button)'
+        ';  showhidden=1    also show the hidden games (right-click menu), saved on exit'
         ';  nextzxos=       SD card image with NextZXOS, used for .bas/.tap games'
         ';                  (default: zxnext.sd in the CSpect folder)'
         ';'
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),'
         ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx'
-        ';  with NextZXOS), title= image= args= optional'
+        ';  with NextZXOS), tapmode=48 (load a .tap in 48K mode),'
+        ';  compat=l2bank9,nodivmmc,dd01nop,zeroram (fixes of the CSpect Compat plugin for old games in CSpect 3),'
+        ';  title= image= args= optional'
         '; ============================================================'
         ''
         '[_default]'
@@ -481,6 +489,11 @@ function Load-Settings {
     $script:WinMax = ($set['maximized'] -match '^\s*(1|yes|true)\s*$')
     $script:LastGame = "$($set['lastgame'])".Trim()
     $script:FavOnly = ($set['favonly'] -match '^\s*(1|yes|true)\s*$')
+    # read only at startup: it is saved on exit, so later reloads must not undo the menu choice
+    if ($null -eq $script:ShowHiddenRead) {
+        $script:ShowHidden = ($set['showhidden'] -match '^\s*(1|yes|true)\s*$')
+        $script:ShowHiddenRead = $true
+    }
     return $ini
 }
 
@@ -745,15 +758,30 @@ function Show-InputBox([string]$title, [string]$label, [string]$value, [bool]$mo
 # ============================================================
 #  Games
 # ============================================================
+# NextBASIC program saved without extension (e.g. Vice City Blues): +3DOS header of type 0 (program)
+function Test-Plus3Program([string]$path) {
+    if ([System.IO.Path]::GetExtension($path)) { return $false }
+    $h = New-Object byte[] 16
+    try {
+        $fs = [System.IO.File]::OpenRead($path)
+        try { $n = $fs.Read($h, 0, 16) } finally { $fs.Close() }
+    } catch { return $false }
+    return ($n -eq 16 -and [System.Text.Encoding]::ASCII.GetString($h, 0, 8) -eq 'PLUS3DOS' -and $h[15] -eq 0)
+}
+
 # executables in the game folder and its subfolders (relative paths);
-# .bas/.tap files (started with NextZXOS) only when there is no .nex/.snx/.sna
+# .bas/.tap files and BASIC programs without extension (started with NextZXOS) only when there is no .nex/.snx/.sna
 function Get-Candidates([string]$folder) {
     $base = $folder.TrimEnd('\', '/')
     $files = @(Get-ChildItem -LiteralPath $folder -File -Recurse -ErrorAction SilentlyContinue)
+    # a file named like the folder comes first (e.g. ViceCityBlues before Day1, Day2... in "Vice City Blues")
+    $folderKey = (Split-Path $base -Leaf) -replace '[^A-Za-z0-9]', ''
     foreach ($exts in @($GameExts, $OsExts)) {
-        $c = @($files | Where-Object { $exts -contains $_.Extension.ToLower() } |
+        $c = @($files | Where-Object { ($exts -contains $_.Extension.ToLower()) -or ([object]::ReferenceEquals($exts, $OsExts) -and (Test-Plus3Program $_.FullName)) } |
             ForEach-Object { $_.FullName.Substring($base.Length + 1) } |
-            Sort-Object @{ Expression = { ($_ -split '[\\/]').Count } }, @{ Expression = { $_ } })
+            Sort-Object @{ Expression = { ($_ -split '[\\/]').Count } },
+                        @{ Expression = { ([System.IO.Path]::GetFileNameWithoutExtension($_) -replace '[^A-Za-z0-9]', '') -ne $folderKey } },
+                        @{ Expression = { $_ } })
         if ($c.Count -gt 0) { return $c }
     }
 }
@@ -942,6 +970,8 @@ function Get-Games {
         AskFile    = ($cfg['askfile'] -match '^\s*(1|yes|true)\s*$')
         BootOs     = ($cfg['boot'] -match '^\s*nextzxos\s*$')
         Favorite   = ($cfg['favorite'] -match '^\s*(1|yes|true)\s*$')
+        Tap48      = ($cfg['tapmode'] -match '^\s*48\s*$')
+        Compat     = "$($cfg['compat'])".Trim()
             Section    = $dir.Name
             Folder     = $dir.FullName
             File       = $gameFile
@@ -1254,18 +1284,31 @@ function New-Plus3Basic([byte[]]$prog, [int]$autostart) {
 #   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  SPECTRUM LOAD (NextZXOS Tape Loader in
 #         128K compatibility mode: also works with loaders that call the ROM LD-BYTES routine, e.g. Tokimal)
 #   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by New-ZvmLoader)
+#   tap48: .cd /game  -  .run name.tap  -  LOAD "c:/nextzxos/usr0.bin" CODE 61440  -
+#         SPECTRUM 48: OUT 9275,36: POKE 61440,b: LET x=USR 61441  (48K mode of NextZXOS's TAPLOAD.BAS;
+#         $codeFirst = b: 1 if the tape starts with a CODE block, 0 with a program)
 #   nex:  .cd /game  -  .nexload name.nex
 #   snx:  .cd /game  -  SPECTRUM "name.snx"
-function New-Autoexec([string]$fileName, [string]$mode) {
+function New-Autoexec([string]$fileName, [string]$mode, [int]$codeFirst = 0) {
     $enc = [System.Text.Encoding]::GetEncoding(28591)
     $load = [byte]0xEF                      # LOAD token
     $lines = @(, $enc.GetBytes('.cd /game'))
     switch ($mode) {
         'tap' {
-            $lines += , $enc.GetBytes(".run $fileName")
+            # .tapein (as the Browser's TAP Loader does) also serves the loaders that call the ROM
+            # tape routine directly (e.g. 4K Race Next); .run only sets up "t:" for LOAD
+            $lines += , $enc.GetBytes(".tapein $fileName")
             $lines += , ([byte[]](@([byte]0xA3, $load)))      # SPECTRUM LOAD
         }
         'zvm' { $lines += , ([byte[]](@($load) + $enc.GetBytes('"c:/zxzvm/run.bas"'))) }
+        'tap48' {
+            $lines += , $enc.GetBytes(".tapein $fileName")
+            $lines += , ([byte[]](@($load) + $enc.GetBytes('"c:/nextzxos/usr0.bin"') + @([byte]0xAF) + (Get-BasicNumber 61440)))   # CODE
+            $lines += , ([byte[]](@([byte]0xA3) + (Get-BasicNumber 48) + $enc.GetBytes(':') +                                          # SPECTRUM 48
+                @([byte]0xDF) + (Get-BasicNumber 9275) + $enc.GetBytes(',') + (Get-BasicNumber 36) + $enc.GetBytes(':') +                # OUT
+                @([byte]0xF4) + (Get-BasicNumber 61440) + $enc.GetBytes(',') + (Get-BasicNumber $codeFirst) + $enc.GetBytes(':') +       # POKE
+                @([byte]0xF1) + $enc.GetBytes('x=') + @([byte]0xC0) + (Get-BasicNumber 61441)))                                          # LET x=USR
+        }
         'nex' { $lines += , $enc.GetBytes(".nexload $fileName") }
         'snx' { $lines += , ([byte[]](@([byte]0xA3) + $enc.GetBytes('"' + $fileName + '"'))) }     # SPECTRUM "name"
         default { $lines += , ([byte[]](@($load) + $enc.GetBytes('"' + $fileName + '"'))) }
@@ -1324,6 +1367,15 @@ function New-OsImage($game) {
     $sys = Update-OsFiles $sd
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
     $mode = switch ($ext) { '.tap' { 'tap' } '.nex' { 'nex' } '.snx' { 'snx' } default { if ($ZExts -contains $ext) { 'zvm' } else { 'bas' } } }
+    $codeFirst = 0
+    if ($mode -eq 'tap' -and $game.Tap48) {
+        $mode = 'tap48'
+        # first block of the tape: a header (flag 0) of CODE (type 3) or of a program (type 0)
+        $head = New-Object byte[] 4
+        $fs = [System.IO.File]::OpenRead($game.File)
+        try { [void]$fs.Read($head, 0, 4) } finally { $fs.Close() }
+        if ($head[2] -eq 0 -and $head[3] -eq 3) { $codeFirst = 1 }
+    }
     $copies = @()                            # extra copies in c:/GAME, not saves of the game
     if ($mode -eq 'zvm' -and -not (Test-Path -LiteralPath (Join-Path $sys 'ZXZVM\NXZXZVM.BAS'))) { throw (T 'osNoZvm' $sd) }
     $exeDir = [System.IO.Path]::GetDirectoryName($game.File)
@@ -1344,10 +1396,27 @@ function New-OsImage($game) {
     Invoke-Hdfmonkey @('mkdir', $img, '/GAME')
     Invoke-Hdfmonkey @('putdir', $img, $exeDir, '/GAME')
     # .run and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
-    if (($mode -eq 'tap' -or $mode -eq 'nex') -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
+    if (($mode -eq 'tap' -or $mode -eq 'tap48' -or $mode -eq 'nex') -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
         $name = 'GAME' + $ext.ToUpper()
         Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
         $copies += $name
+    }
+    # BASIC programs saved without autostart (e.g. Orb Run) would only be loaded, not started:
+    # a copy as GAME.BAS that starts from its first line
+    if ($mode -eq 'bas') {
+        $b = [System.IO.File]::ReadAllBytes($game.File)
+        if ($b.Length -ge 130 -and [System.Text.Encoding]::ASCII.GetString($b, 0, 8) -eq 'PLUS3DOS' -and
+            $b[15] -eq 0 -and ($b[18] + 256 * $b[19]) -ge 32768) {
+            $first = $b[128] * 256 + $b[129]                              # line numbers are big-endian
+            [BitConverter]::GetBytes([uint16]$first).CopyTo($b, 18)
+            $sum = 0; for ($i = 0; $i -lt 127; $i++) { $sum += $b[$i] }
+            $b[127] = [byte]($sum % 256)                                  # header checksum
+            $name = 'GAME.BAS'
+            $gb = Join-Path $OsWork $name
+            [System.IO.File]::WriteAllBytes($gb, $b)
+            Invoke-Hdfmonkey @('put', $img, $gb, "/GAME/$name")
+            $copies += $name
+        }
     }
     # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
     if ($mode -eq 'zvm') {
@@ -1361,7 +1430,7 @@ function New-OsImage($game) {
         Invoke-Hdfmonkey @('put', $img, $zl, '/ZXZVM/RUN.BAS')
     }
     $ae = Join-Path $OsWork 'AUTOEXEC.BAS'
-    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode))
+    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode $codeFirst))
     Invoke-Hdfmonkey @('put', $img, $ae, '/NEXTZXOS/AUTOEXEC.BAS')
     return [pscustomobject]@{ Img = $img; Dir = $exeDir; Copies = $copies }
 }
@@ -1429,7 +1498,12 @@ function Watch-OsRun($proc, $run) {
 function Test-OsLaunch($game) {
     if (-not $game.File) { return $false }
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
-    return (($OsExts -contains $ext) -or ($game.BootOs -and $OsNexExts -contains $ext))
+    return (($OsExts -contains $ext) -or ($game.BootOs -and $OsNexExts -contains $ext) -or (Test-Plus3Program $game.File))
+}
+
+# options of the CSpect Compat plugin for a game (compat=, comma-separated)
+function Get-CompatList($game) {
+    return @("$($game.Compat)".Split(',') | ForEach-Object { $_.Trim().ToLower() } | Where-Object { $_ })
 }
 
 # starting a game
@@ -1448,6 +1522,11 @@ function Start-Game($game) {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName         = $script:Emulator
     $psi.UseShellExecute  = $false
+    # fixes of the CSpect Compat plugin (Compat.dll next to CSpect.exe); ignored when it is not installed
+    if ($game.Compat) {
+        $psi.EnvironmentVariables['CSPECT_COMPAT'] = $game.Compat
+        $psi.EnvironmentVariables['CSPECT_COMPAT_FILE'] = $game.File          # dd01nop reads the .nex
+    }
     $osRun = $null
     if (Test-OsLaunch $game) {
         # NextZXOS games: CSpect starts with the image created on the fly (-mmc= not needed)
@@ -1513,7 +1592,7 @@ if (-not (Test-Path -LiteralPath $IniPath)) {
 #  User interface
 # ============================================================
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'CSpect Launcher - ZX Spectrum Next'
+$form.Text = "$AppName $AppVersion - ZX Spectrum Next"
 $form.Size = New-Object System.Drawing.Size(960, 600)
 $form.MinimumSize = New-Object System.Drawing.Size(700, 420)
 $form.StartPosition = 'CenterScreen'
@@ -1671,15 +1750,22 @@ $menu = New-Object System.Windows.Forms.ContextMenuStrip
 $miChoose     = $menu.Items.Add('')
 $miArgs       = $menu.Items.Add('')
 $miRename     = $menu.Items.Add('')
-$miFav        = $menu.Items.Add('')
 $miHide       = $menu.Items.Add('')
 $miDelSav     = $menu.Items.Add('')
 $miFolder     = $menu.Items.Add('')
 $miOs         = $menu.Items.Add('')
+$miTap48      = $menu.Items.Add('')
+$miCompat     = $menu.Items.Add('')
+$miCompatL2   = $miCompat.DropDownItems.Add('')
+$miCompatDiv  = $miCompat.DropDownItems.Add('')
+$miCompatDd01 = $miCompat.DropDownItems.Add('')
+$miCompatZero = $miCompat.DropDownItems.Add('')
 [void]$menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
 $miShowHidden = New-Object System.Windows.Forms.ToolStripMenuItem
 $miShowHidden.CheckOnClick = $true
 [void]$menu.Items.Add($miShowHidden)
+[void]$menu.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
+$miFav        = $menu.Items.Add('')            # last, at the bottom of the menu
 $lst.ContextMenuStrip = $menu
 
 # ============================================================
@@ -1704,6 +1790,12 @@ function Apply-Language {
     $miDelSav.Text  = T 'delSavMenu'
     $miFolder.Text  = T 'openFolderMenu'
     $miOs.Text      = T 'osMenu'
+    $miTap48.Text   = T 'tap48Menu'
+    $miCompat.Text  = T 'compatMenu'
+    $miCompatL2.Text  = T 'compatL2'
+    $miCompatDiv.Text = T 'compatDiv'
+    $miCompatDd01.Text = T 'compatDd01'
+    $miCompatZero.Text = T 'compatZero'
     $miShowHidden.Text = T 'showHiddenMenu'
     $btnSettings.Text = [string][char]0x2699 + ' ' + (T 'settings')
 }
@@ -1787,8 +1879,10 @@ function Show-Game($g) {
     if ($g.File) {
         $argTxt = $g.Args
         if ($g.ArgsCfg) { $argTxt += '  ' + (T 'customTag') }
+        if ($g.Compat) { $argTxt += "  [Compat: $($g.Compat)]" }
         $rel = $g.File.Substring($g.Folder.TrimEnd('\').Length + 1)
         if (Test-OsLaunch $g) { $rel += '  ' + (T 'osTag') }
+        if ($g.Tap48 -and [System.IO.Path]::GetExtension($g.File) -ieq '.tap') { $rel += '  (48K)' }
         if ($g.AskFile -and $g.Candidates.Count -gt 1) { $rel += '  ' + (T 'askTag') }
         $lblFile.Text = T 'fileLine' $rel $argTxt
         $btnPlay.Enabled = $true
@@ -1829,6 +1923,20 @@ $menu.Add_Opening({
     $miFolder.Enabled = [bool]$g
     $miOs.Enabled     = ($g -and @($g.Candidates | Where-Object { $OsNexExts -contains [System.IO.Path]::GetExtension($_).ToLower() }).Count -gt 0)
     $miOs.Checked     = ($g -and $g.BootOs)
+    # only for .tap games: the chosen executable, or any candidate when none is chosen yet
+    $isTap = $false
+    if ($g) {
+        if ($g.File) { $isTap = [System.IO.Path]::GetExtension($g.File) -ieq '.tap' }
+        else { $isTap = @($g.Candidates | Where-Object { [System.IO.Path]::GetExtension($_) -ieq '.tap' }).Count -gt 0 }
+    }
+    $miTap48.Visible  = $isTap
+    $miTap48.Checked  = ($g -and $g.Tap48)
+    $miCompat.Enabled = [bool]$g
+    $miCompat.Checked = ($g -and (Get-CompatList $g).Count -gt 0)
+    $miCompatL2.Checked  = ($g -and (Get-CompatList $g) -contains 'l2bank9')
+    $miCompatDiv.Checked = ($g -and (Get-CompatList $g) -contains 'nodivmmc')
+    $miCompatDd01.Checked = ($g -and (Get-CompatList $g) -contains 'dd01nop')
+    $miCompatZero.Checked = ($g -and (Get-CompatList $g) -contains 'zeroram')
     $miShowHidden.Checked = $script:ShowHidden
 })
 
@@ -1928,6 +2036,37 @@ $miOs.Add_Click({
     Show-Game $g
 })
 
+# .tap loaded in 48K mode instead of 128K (tapmode=48), for games that need it
+$miTap48.Add_Click({
+    $g = $lst.SelectedItem
+    if (-not $g) { return }
+    $g.Tap48 = -not $g.Tap48
+    try { Set-IniValue $g.Section 'tapmode' $(if ($g.Tap48) { '48' } else { '' }) } catch {
+        [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), $AppName, 'OK', 'Warning') | Out-Null
+    }
+    Show-Game $g
+})
+
+# fixes of the CSpect Compat plugin for old games that crash in CSpect 3 (compat=, comma-separated):
+# l2bank9 = Layer 2 at bank 9 as in CSpect 2 (e.g. Montana Mike), nodivmmc = DivMMC automap off (e.g. Deltas Shadow),
+# dd01nop = DD 01 debugger breakpoints in the .nex as NOPs, as CSpect 2 skipped them (e.g. Elite Next),
+# zeroram = RAM outside the snapshot cleared as in CSpect 2 (e.g. Spice Invaderz)
+function Switch-Compat([string]$opt) {
+    $g = $lst.SelectedItem
+    if (-not $g) { return }
+    $list = @(Get-CompatList $g | Where-Object { $_ -ne $opt })
+    if (-not ((Get-CompatList $g) -contains $opt)) { $list += $opt }
+    $g.Compat = $list -join ','
+    try { Set-IniValue $g.Section 'compat' $g.Compat } catch {
+        [System.Windows.Forms.MessageBox]::Show((T 'saveErr' $_.Exception.Message), $AppName, 'OK', 'Warning') | Out-Null
+    }
+    Show-Game $g
+}
+$miCompatL2.Add_Click({ Switch-Compat 'l2bank9' })
+$miCompatDiv.Add_Click({ Switch-Compat 'nodivmmc' })
+$miCompatDd01.Add_Click({ Switch-Compat 'dd01nop' })
+$miCompatZero.Add_Click({ Switch-Compat 'zeroram' })
+
 $miFolder.Add_Click({
     $g = $lst.SelectedItem
     if (-not $g) { return }
@@ -2024,12 +2163,13 @@ if ($script:WinMax) { $form.WindowState = 'Maximized' }
 $icoPath = Join-Path (Split-Path $script:Emulator -Parent) 'ZXNext.ico'
 if (Test-Path -LiteralPath $icoPath) { try { $form.Icon = New-Object System.Drawing.Icon($icoPath) } catch {} }
 
-# on exit: window size (the normal one, also when maximized) and maximized state
+# on exit: window size (the normal one, also when maximized), maximized state and "show hidden games"
 $form.Add_FormClosing({
     $b = if ($form.WindowState -eq 'Normal') { $form.Bounds } else { $form.RestoreBounds }
     try {
         Set-IniValue '_default' 'window' "$($b.Width)x$($b.Height)"
         Set-IniValue '_default' 'maximized' $(if ($form.WindowState -eq 'Maximized') { '1' } else { '' })
+        Set-IniValue '_default' 'showhidden' $(if ($script:ShowHidden) { '1' } else { '' })
     } catch {}
 })
 

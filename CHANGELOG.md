@@ -3,6 +3,13 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## 1.5
+
+- Right-click menu: "Load in 48K mode" for .tap games that need the 48K Spectrum
+- NextBASIC programs saved without extension (e.g. Vice City Blues) start automatically through NextZXOS like .bas files; a file named like the game folder is offered first
+- BASIC programs saved without autostart (e.g. Orb Run) now start instead of only being loaded
+- Right-click menu: "CSpect 3 compatibility" turns on, per game, the fixes of the CSpect Compat plugin for old games that crash in CSpect 3 (e.g. Montana Mike, Deltas Shadow, Elite Next, Spice Invaderz)
+
 ## 1.4
 
 - Right-click menu: "Start with NextZXOS" loads a .nex/.snx through NextZXOS, for games that stay on a black screen in CSpect (e.g. The Lords of Midnight)
