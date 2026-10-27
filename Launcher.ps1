@@ -72,7 +72,7 @@ $script:Strings = @{
     chooseAlways = 'Always use this executable'; askTag = '(asked at every launch)'
     osMenu = 'Start with NextZXOS'; osSaved = 'Saved files copied to the game folder: {0}'
     favAdd = 'Add to favorites'; favRemove = 'Remove from favorites'; favTip = 'Show only favorite games'
-    tap48Menu = 'Load in 48K mode'; compatMenu = 'CSpect 3 compatibility'; compatL2 = 'Layer 2 at bank 9 (as in CSpect 2)'; compatDiv = 'DivMMC automap off'; compatDd01 = 'DD 01 breakpoints as NOP (as in CSpect 2)'; compatZero = 'RAM cleared at start (as in CSpect 2)'
+    tap48Menu = 'Load in 48K mode'; compatMenu = 'CSpect 3 compatibility'; compatL2 = 'Layer 2 at bank 9'; compatDiv = 'DivMMC automap off'; compatDd01 = 'DD 01 breakpoints as NOP'; compatZero = 'RAM cleared at start'
     delSavConfirm = "Delete {0} save file(s) of {1}?`n`n{2}`n`nThe files are moved to the Recycle Bin."
     delSavDone = 'Save files deleted: {0}'; delSavErr = "Cannot delete:`n{0}"
     info = 'Info'; aboutTitle = 'About'; aboutVersion = 'Version {0}'
@@ -123,7 +123,7 @@ $script:Strings = @{
     chooseAlways = 'Usa sempre questo eseguibile'; askTag = '(chiesto a ogni avvio)'
     osMenu = 'Avvia con NextZXOS'; osSaved = 'File salvati copiati nella cartella del gioco: {0}'
     favAdd = 'Aggiungi ai preferiti'; favRemove = 'Togli dai preferiti'; favTip = 'Mostra solo i giochi preferiti'
-    tap48Menu = 'Carica in modalità 48K'; compatMenu = 'Compatibilità CSpect 3'; compatL2 = 'Layer 2 al banco 9 (come in CSpect 2)'; compatDiv = 'Mappatura automatica DivMMC spenta'; compatDd01 = 'Breakpoint DD 01 come NOP (come in CSpect 2)'; compatZero = 'RAM azzerata all''avvio (come in CSpect 2)'
+    tap48Menu = 'Carica in modalità 48K'; compatMenu = 'Compatibilità CSpect 3'; compatL2 = 'Layer 2 al banco 9'; compatDiv = 'Mappatura automatica DivMMC spenta'; compatDd01 = 'Breakpoint DD 01 come NOP'; compatZero = 'RAM azzerata all''avvio'
     delSavConfirm = "Eliminare {0} file di salvataggio di {1}?`n`n{2}`n`nI file vengono spostati nel Cestino."
     delSavDone = 'Salvataggi eliminati: {0}'; delSavErr = "Impossibile eliminare:`n{0}"
     info = 'Info'; aboutTitle = 'Informazioni'; aboutVersion = 'Versione {0}'
@@ -174,7 +174,7 @@ $script:Strings = @{
     chooseAlways = 'Usar siempre este ejecutable'; askTag = '(se pregunta en cada inicio)'
     osMenu = 'Iniciar con NextZXOS'; osSaved = 'Archivos guardados copiados en la carpeta del juego: {0}'
     favAdd = 'Añadir a favoritos'; favRemove = 'Quitar de favoritos'; favTip = 'Mostrar solo los juegos favoritos'
-    tap48Menu = 'Cargar en modo 48K'; compatMenu = 'Compatibilidad CSpect 3'; compatL2 = 'Layer 2 en el banco 9 (como en CSpect 2)'; compatDiv = 'Mapeo automático DivMMC desactivado'; compatDd01 = 'Breakpoints DD 01 como NOP (como en CSpect 2)'; compatZero = 'RAM a cero al inicio (como en CSpect 2)'
+    tap48Menu = 'Cargar en modo 48K'; compatMenu = 'Compatibilidad CSpect 3'; compatL2 = 'Layer 2 en el banco 9'; compatDiv = 'Mapeo automático DivMMC desactivado'; compatDd01 = 'Breakpoints DD 01 como NOP'; compatZero = 'RAM a cero al inicio'
     delSavConfirm = "¿Borrar {0} archivo(s) de partida de {1}?`n`n{2}`n`nLos archivos se mueven a la Papelera de reciclaje."
     delSavDone = 'Partidas borradas: {0}'; delSavErr = "No se puede borrar:`n{0}"
     info = 'Info'; aboutTitle = 'Acerca de'; aboutVersion = 'Versión {0}'
@@ -225,7 +225,7 @@ $script:Strings = @{
     chooseAlways = 'Toujours utiliser cet exécutable'; askTag = '(demandé à chaque lancement)'
     osMenu = 'Lancer avec NextZXOS'; osSaved = 'Fichiers sauvegardés copiés dans le dossier du jeu : {0}'
     favAdd = 'Ajouter aux favoris'; favRemove = 'Retirer des favoris'; favTip = 'Afficher seulement les jeux favoris'
-    tap48Menu = 'Charger en mode 48K'; compatMenu = 'Compatibilité CSpect 3'; compatL2 = 'Layer 2 à la banque 9 (comme dans CSpect 2)'; compatDiv = 'Mappage automatique DivMMC désactivé'; compatDd01 = 'Points d''arrêt DD 01 en NOP (comme dans CSpect 2)'; compatZero = 'RAM remise à zéro au démarrage (comme dans CSpect 2)'
+    tap48Menu = 'Charger en mode 48K'; compatMenu = 'Compatibilité CSpect 3'; compatL2 = 'Layer 2 à la banque 9'; compatDiv = 'Mappage automatique DivMMC désactivé'; compatDd01 = 'Points d''arrêt DD 01 en NOP'; compatZero = 'RAM remise à zéro au démarrage'
     delSavConfirm = "Supprimer {0} fichier(s) de sauvegarde de {1} ?`n`n{2}`n`nLes fichiers sont placés dans la Corbeille."
     delSavDone = 'Sauvegardes supprimées : {0}'; delSavErr = "Impossible de supprimer :`n{0}"
     info = 'Infos'; aboutTitle = 'À propos'; aboutVersion = 'Version {0}'
@@ -276,7 +276,7 @@ $script:Strings = @{
     chooseAlways = 'Dieses Programm immer verwenden'; askTag = '(wird bei jedem Start gefragt)'
     osMenu = 'Mit NextZXOS starten'; osSaved = 'Gespeicherte Dateien in den Spielordner kopiert: {0}'
     favAdd = 'Zu Favoriten hinzufügen'; favRemove = 'Aus Favoriten entfernen'; favTip = 'Nur Lieblingsspiele anzeigen'
-    tap48Menu = 'Im 48K-Modus laden'; compatMenu = 'CSpect-3-Kompatibilität'; compatL2 = 'Layer 2 auf Bank 9 (wie in CSpect 2)'; compatDiv = 'Automatisches DivMMC-Mapping aus'; compatDd01 = 'DD-01-Haltepunkte als NOP (wie in CSpect 2)'; compatZero = 'RAM beim Start gelöscht (wie in CSpect 2)'
+    tap48Menu = 'Im 48K-Modus laden'; compatMenu = 'CSpect-3-Kompatibilität'; compatL2 = 'Layer 2 auf Bank 9'; compatDiv = 'Automatisches DivMMC-Mapping aus'; compatDd01 = 'DD-01-Haltepunkte als NOP'; compatZero = 'RAM beim Start gelöscht'
     delSavConfirm = "{0} Spielstand-Datei(en) von {1} löschen?`n`n{2}`n`nDie Dateien werden in den Papierkorb verschoben."
     delSavDone = 'Spielstände gelöscht: {0}'; delSavErr = "Löschen nicht möglich:`n{0}"
     info = 'Info'; aboutTitle = 'Über'; aboutVersion = 'Version {0}'
