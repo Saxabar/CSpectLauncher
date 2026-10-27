@@ -5,9 +5,9 @@ Each version has a "## <version>" section, used as the text of the GitHub releas
 
 ## Unreleased
 
-- "Start with NextZXOS" also works for .sna games, loaded with the NextZXOS Snapshot Loader as the Browser does (e.g. Spectron 2084)
+- "Start with NextZXOS" also works for .sna games, loaded with the NextZXOS Snapshot Loader as the Browser does
 - Games that load their files from a fixed folder of the SD card (e.g. TX-1696 from c:/tx-1696/) are put in that folder of the NextZXOS image, so they start
-- nextzxos= in a game's section of games.ini: an SD card image for that game only, e.g. an older NextZXOS for games that do not work with the newer one (Spectron 2084 needs NextZXOS 2.06)
+- "Start with NextZXOS" is now in the "CSpect 3 compatibility" submenu of the right-click menu
 
 ## 1.5
 

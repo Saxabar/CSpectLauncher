@@ -392,8 +392,7 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
         ';'
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),'
         ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx/.sna'
-        ';  with NextZXOS), nextzxos= (SD card image of this game, e.g. an older NextZXOS),'
-        ';  tapmode=48 (load a .tap in 48K mode),'
+        ';  with NextZXOS), tapmode=48 (load a .tap in 48K mode),'
         ';  compat=l2bank9,nodivmmc,dd01nop,zeroram (fixes of the CSpect Compat plugin for old games in CSpect 3),'
         ';  title= image= args= optional'
         '; ============================================================'
@@ -973,7 +972,6 @@ function Get-Games {
         Favorite   = ($cfg['favorite'] -match '^\s*(1|yes|true)\s*$')
         Tap48      = ($cfg['tapmode'] -match '^\s*48\s*$')
         Compat     = "$($cfg['compat'])".Trim()
-        SdImage    = "$($cfg['nextzxos'])".Trim()
             Section    = $dir.Name
             Folder     = $dir.FullName
             File       = $gameFile
@@ -1236,18 +1234,11 @@ function Invoke-Hdfmonkey([string[]]$hArgs) {
     if ($p.ExitCode -ne 0) { throw "hdfmonkey $($hArgs[0]): $($out.Trim())" }
 }
 
-# NextZXOS system files copied from the SD card image (once, until the image changes); those of a
-# game's own image (nextzxos= in its section) go in a folder of their own, nextzxos-<hash of the path>
+# NextZXOS system files copied from the SD card image (once, until the image changes)
 function Update-OsFiles([string]$sdImage) {
+    $dir = Join-Path $OsWork 'nextzxos'
+    $stampFile = Join-Path $OsWork 'nextzxos.txt'
     $fi = Get-Item -LiteralPath $sdImage
-    $name = 'nextzxos'
-    if ($fi.FullName -ne (Resolve-SdImage $script:SdImageCfg)) {
-        $md5 = [System.Security.Cryptography.MD5]::Create()
-        $hash = $md5.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($fi.FullName.ToLower()))
-        $name += '-' + (($hash[0..3] | ForEach-Object { $_.ToString('x2') }) -join '')
-    }
-    $dir = Join-Path $OsWork $name
-    $stampFile = Join-Path $OsWork "$name.txt"
     $stamp = "$($fi.FullName)|$($fi.Length)|$($fi.LastWriteTimeUtc.Ticks)|$($OsDirs + $OsOptDirs -join ',')"
     if ((Test-Path -LiteralPath $dir) -and (Test-Path -LiteralPath $stampFile) -and
         [System.IO.File]::ReadAllText($stampFile) -eq $stamp) { return $dir }
@@ -1400,14 +1391,8 @@ function Get-OsGameDir([string]$file) {
 
 # creates the SD card image of the game; returns its path, $null if cancelled
 function New-OsImage($game) {
-    if ($game.SdImage) {
-        # the game's own image (nextzxos= in its section), e.g. an older NextZXOS for an old game
-        $sd = Resolve-SdImage $game.SdImage
-        if (-not (Test-Path -LiteralPath $sd -PathType Leaf)) { throw (T 'osBadImage' $sd) }
-    } else {
-        $sd = Find-SdImage
-        if (-not $sd) { return $null }
-    }
+    $sd = Find-SdImage
+    if (-not $sd) { return $null }
     $sys = Update-OsFiles $sd
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
     # .sna: with the Snapshot Loader (SNAPLOAD.BAS) as the Browser does; older NextZXOS without it
@@ -1801,9 +1786,10 @@ $miRename     = $menu.Items.Add('')
 $miHide       = $menu.Items.Add('')
 $miDelSav     = $menu.Items.Add('')
 $miFolder     = $menu.Items.Add('')
-$miOs         = $menu.Items.Add('')
 $miTap48      = $menu.Items.Add('')
 $miCompat     = $menu.Items.Add('')
+$miOs         = $miCompat.DropDownItems.Add('')     # start with NextZXOS: also a compatibility choice
+[void]$miCompat.DropDownItems.Add((New-Object System.Windows.Forms.ToolStripSeparator))
 $miCompatL2   = $miCompat.DropDownItems.Add('')
 $miCompatDiv  = $miCompat.DropDownItems.Add('')
 $miCompatDd01 = $miCompat.DropDownItems.Add('')
@@ -1980,7 +1966,7 @@ $menu.Add_Opening({
     $miTap48.Visible  = $isTap
     $miTap48.Checked  = ($g -and $g.Tap48)
     $miCompat.Enabled = [bool]$g
-    $miCompat.Checked = ($g -and (Get-CompatList $g).Count -gt 0)
+    $miCompat.Checked = ($g -and ($g.BootOs -or (Get-CompatList $g).Count -gt 0))
     $miCompatL2.Checked  = ($g -and (Get-CompatList $g) -contains 'l2bank9')
     $miCompatDiv.Checked = ($g -and (Get-CompatList $g) -contains 'nodivmmc')
     $miCompatDd01.Checked = ($g -and (Get-CompatList $g) -contains 'dd01nop')
