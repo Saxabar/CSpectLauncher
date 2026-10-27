@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle 
 
 # ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.5'
+$AppVersion   = '1.6'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'

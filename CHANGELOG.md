@@ -3,7 +3,7 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
-## Unreleased
+## 1.6
 
 - "Start with NextZXOS" also works for .sna games, loaded with the NextZXOS Snapshot Loader as the Browser does
 - Games that load their files from a fixed folder of the SD card (e.g. TX-1696 from c:/tx-1696/) are put in that folder of the NextZXOS image, so they start

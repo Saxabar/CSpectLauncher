@@ -1,7 +1,7 @@
 # CSpect Launcher for Linux and macOS
 
 The Linux and macOS version of **CSpect Launcher**, the game launcher for the ZX Spectrum Next emulator CSpect. For macOS see the [macOS section](#macos) below.
-Version 1.5 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
+Version 1.6 · © 2026 Giuseppe Papa · [GPL-3.0](../LICENSE)
 
 ![CSpect Launcher for Linux](screenshot-linux.png)
 
