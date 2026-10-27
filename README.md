@@ -100,12 +100,15 @@ CSpect does not include `zxnext.sd`: it is downloaded the first time you run CSp
 - **No:** select an SD card image you already have (saved as `nextzxos=` in `games.ini`);
 - **Cancel:** do nothing.
 
-Some `.nex` games do not start when CSpect loads them directly (for example *The Lords of Midnight*, which stays on a black screen). For these, choose **Start with NextZXOS** in the right-click menu: the game is then loaded by NextZXOS (`.nexload`, or `SPECTRUM` for `.snx`) in the same way.
+Some `.nex`, `.snx` and `.sna` games do not start when CSpect loads them directly (for example *The Lords of Midnight*, which stays on a black screen). For these, choose **Start with NextZXOS** in the right-click menu: the game is then loaded by NextZXOS in the same way (`.nexload` for `.nex`, `SPECTRUM` for `.snx`, the Snapshot Loader for `.sna`, as the Browser does; the first time the Snapshot Loader asks to press ENTER).
+
+A few old games only work with an older NextZXOS: for example *Spectron 2084* (2018) starts with NextZXOS 2.06 but stays on a grey screen with 2.09. For these, write `nextzxos=` in the game's section of `games.ini` with an SD card image that has the older NextZXOS (e.g. `nextzxos=.\CSpect\ZXNext106.vhd`); the other games keep using the main image. With NextZXOS versions that have no Snapshot Loader, `.sna` files are started with `SPECTRUM`.
 
 Notes:
 
 - `.tap` files are loaded in 128K mode (NextZXOS Tape Loader). For games that need the 48K Spectrum, choose **Load in 48K mode** in the right-click menu (shown only for `.tap` games); the file shown in the details then ends with *(48K)*.
 - Z-machine text adventures (`.z3`, `.z4`, `.z5`, `.z7`, `.z8`, such as Infocom games) are played with **ZXZVM**, the interpreter included in the NextZXOS distribution (`C:/GAMES/Z-Machine/ZXZVM` in `zxnext.sd`): the launcher copies it into the image and starts the story directly, without ZXZVM's welcome screen and without its "press a key to start" prompt. Files whose name is longer than 8 characters are copied as `STORY.Z5` (or `.Z3`...).
+- The game's folder goes into `C:/GAME` of the image, unless its executable loads its files from a fixed folder such as `c:/tx-1696/` (*TX-1696*): then it goes there.
 - The image is created again at every launch. When CSpect is closed, the files that the game created or changed in its folder (saved games, high scores) are copied back to the game folder, so they are there at the next launch; keep the launcher open until you close CSpect. Images of previous launches are deleted automatically (except the one of a CSpect still running).
 - CSpect starts in the game's folder, so F5 screenshots are saved next to the game and used as the cover, as for the other games.
 - The file shown in the details ends with *(with NextZXOS)*. The CSpect option `-mmc=` is not used for these games.
@@ -142,7 +145,7 @@ If you take several screenshots, the most recent one is used.
 | Open game folder | opens the game folder in Explorer, with the executable selected |
 | CSpect 3 compatibility | fixes of the [CSpect Compat](https://github.com/Saxabar/CSpectCompat) plugin (it must be installed next to `CSpect.exe`) for old games that crash in CSpect 3: "Layer 2 at bank 9" (`l2bank9`, e.g. Montana Mike), "DivMMC automap off" (`nodivmmc`, e.g. Deltas Shadow), "DD 01 breakpoints as NOP" (`dd01nop`, e.g. Elite Next) and "RAM cleared at start" (`zeroram`, e.g. Spice Invaderz); click an option again to turn it off |
 | Load in 48K mode | only for `.tap` games: loads the tape in 48K mode instead of 128K; click again to turn it off |
-| Start with NextZXOS | starts the game's `.nex` / `.snx` through NextZXOS instead of CSpect's own loader (for games that stay on a black screen); click again to turn it off |
+| Start with NextZXOS | starts the game's `.nex` / `.snx` / `.sna` through NextZXOS instead of CSpect's own loader (for games that stay on a black screen); click again to turn it off |
 | Show hidden games | also shows hidden games, so you can show them again (remembered when the launcher is closed) |
 
 ### Settings (gear button, bottom right)
@@ -206,7 +209,7 @@ tapmode=48
 | `favonly` | `1` = show only the favorite games (♥ button) |
 | `showhidden` | `1` = also show the hidden games (right-click menu "Show hidden games"), saved on exit |
 | `lastgame` | last game started (folder name), selected again when the launcher opens |
-| `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` / `.z5` games (empty = `zxnext.sd` in the CSpect folder) |
+| `nextzxos` | SD card image with NextZXOS, used for `.bas` / `.tap` / `.z5` games (empty = `zxnext.sd` in the CSpect folder); in a game section: the image for that game only, e.g. an older NextZXOS for a game that does not work with the newer one |
 | `file` | executable to start (may include a subfolder) |
 | `rating` | rating 1..5 |
 | `title` | name shown in the list |
@@ -215,7 +218,7 @@ tapmode=48
 | `favorite` | `1` = favorite game |
 | `tapmode` | `48` = load the `.tap` in 48K mode |
 | `compat` | fixes of the CSpect Compat plugin for this game, comma-separated: `l2bank9`, `nodivmmc`, `dd01nop`, `zeroram` (passed to CSpect in the `CSPECT_COMPAT` variable) |
-| `boot` | `nextzxos` = start the `.nex` / `.snx` through NextZXOS |
+| `boot` | `nextzxos` = start the `.nex` / `.snx` / `.sna` through NextZXOS |
 | `askfile` | `1` = ask which executable to start at every launch ("Always use this executable" unchecked) |
 
 Comments must be on their own line, starting with `;`.

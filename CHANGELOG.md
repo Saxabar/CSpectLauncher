@@ -3,6 +3,12 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## Unreleased
+
+- "Start with NextZXOS" also works for .sna games, loaded with the NextZXOS Snapshot Loader as the Browser does (e.g. Spectron 2084)
+- Games that load their files from a fixed folder of the SD card (e.g. TX-1696 from c:/tx-1696/) are put in that folder of the NextZXOS image, so they start
+- nextzxos= in a game's section of games.ini: an SD card image for that game only, e.g. an older NextZXOS for games that do not work with the newer one (Spectron 2084 needs NextZXOS 2.06)
+
 ## 1.5
 
 - Right-click menu: "Load in 48K mode" for .tap games that need the 48K Spectrum

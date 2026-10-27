@@ -33,7 +33,7 @@ $IniPath     = Join-Path $Root 'games.ini'
 $GameExts    = @('.nex', '.snx', '.sna')
 $OsExts      = @('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
 $ZExts       = @('.z3', '.z4', '.z5', '.z7', '.z8')  # Z-machine text adventures, played with ZXZVM
-$OsNexExts   = @('.nex', '.snx')                     # can also be started with NextZXOS (boot=nextzxos)
+$OsNexExts   = @('.nex', '.snx', '.sna')             # can also be started with NextZXOS (boot=nextzxos)
 $OsDirs      = @('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
 $OsOptDirs   = @('GAMES/Z-Machine/ZXZVM')            # optional: copied when the SD card image has it
 $OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # system files and SD card images created on the fly
@@ -391,8 +391,9 @@ function New-IniFile([string]$lang, [string]$games, [string]$cspect, [string]$ga
         ';                  (default: zxnext.sd in the CSpect folder)'
         ';'
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),'
-        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx'
-        ';  with NextZXOS), tapmode=48 (load a .tap in 48K mode),'
+        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx/.sna'
+        ';  with NextZXOS), nextzxos= (SD card image of this game, e.g. an older NextZXOS),'
+        ';  tapmode=48 (load a .tap in 48K mode),'
         ';  compat=l2bank9,nodivmmc,dd01nop,zeroram (fixes of the CSpect Compat plugin for old games in CSpect 3),'
         ';  title= image= args= optional'
         '; ============================================================'
@@ -972,6 +973,7 @@ function Get-Games {
         Favorite   = ($cfg['favorite'] -match '^\s*(1|yes|true)\s*$')
         Tap48      = ($cfg['tapmode'] -match '^\s*48\s*$')
         Compat     = "$($cfg['compat'])".Trim()
+        SdImage    = "$($cfg['nextzxos'])".Trim()
             Section    = $dir.Name
             Folder     = $dir.FullName
             File       = $gameFile
@@ -992,7 +994,7 @@ function Get-Games {
 #  NextZXOS: starting .bas and .tap files
 #  CSpect cannot open them directly: a small SD card image is created on the fly
 #  with the NextZXOS files (taken from the user's image, e.g. zxnext.sd), the game
-#  in c:/GAME and an autoexec.bas that loads it at power on
+#  in c:/GAME (or the folder its executable expects) and an autoexec.bas that loads it at power on
 # ============================================================
 # read-only access to a FAT32 SD card image, with or without a partition table
 Add-Type -TypeDefinition @'
@@ -1234,11 +1236,18 @@ function Invoke-Hdfmonkey([string[]]$hArgs) {
     if ($p.ExitCode -ne 0) { throw "hdfmonkey $($hArgs[0]): $($out.Trim())" }
 }
 
-# NextZXOS system files copied from the SD card image (once, until the image changes)
+# NextZXOS system files copied from the SD card image (once, until the image changes); those of a
+# game's own image (nextzxos= in its section) go in a folder of their own, nextzxos-<hash of the path>
 function Update-OsFiles([string]$sdImage) {
-    $dir = Join-Path $OsWork 'nextzxos'
-    $stampFile = Join-Path $OsWork 'nextzxos.txt'
     $fi = Get-Item -LiteralPath $sdImage
+    $name = 'nextzxos'
+    if ($fi.FullName -ne (Resolve-SdImage $script:SdImageCfg)) {
+        $md5 = [System.Security.Cryptography.MD5]::Create()
+        $hash = $md5.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($fi.FullName.ToLower()))
+        $name += '-' + (($hash[0..3] | ForEach-Object { $_.ToString('x2') }) -join '')
+    }
+    $dir = Join-Path $OsWork $name
+    $stampFile = Join-Path $OsWork "$name.txt"
     $stamp = "$($fi.FullName)|$($fi.Length)|$($fi.LastWriteTimeUtc.Ticks)|$($OsDirs + $OsOptDirs -join ',')"
     if ((Test-Path -LiteralPath $dir) -and (Test-Path -LiteralPath $stampFile) -and
         [System.IO.File]::ReadAllText($stampFile) -eq $stamp) { return $dir }
@@ -1279,7 +1288,7 @@ function New-Plus3Basic([byte[]]$prog, [int]$autostart) {
     return [byte[]]($h + $prog)
 }
 
-# autoexec.bas: goes to c:/GAME and loads the game
+# autoexec.bas: goes to c:/GAME (or the folder $cd, see Get-OsGameDir) and loads the game
 #   bas:  .cd /game  -  LOAD "name.bas"
 #   tap:  .cd /game  -  .run name.tap (mounts the tape)  -  SPECTRUM LOAD (NextZXOS Tape Loader in
 #         128K compatibility mode: also works with loaders that call the ROM LD-BYTES routine, e.g. Tokimal)
@@ -1289,10 +1298,13 @@ function New-Plus3Basic([byte[]]$prog, [int]$autostart) {
 #         $codeFirst = b: 1 if the tape starts with a CODE block, 0 with a program)
 #   nex:  .cd /game  -  .nexload name.nex
 #   snx:  .cd /game  -  SPECTRUM "name.snx"
-function New-Autoexec([string]$fileName, [string]$mode, [int]$codeFirst = 0) {
+#   sna:  .cd /game  -  CLEAR 65367  -  %s=%REG 7&3: RUN AT 3: MERGE "c:/nextzxos/snapload.bas"  -
+#         RUN AT %s: LET f$="name.sna": LET adj=0: GO TO 1  (as the Browser does, with the MERGE at
+#         28 MHz; lines from 9990, after those of SNAPLOAD.BAS)
+function New-Autoexec([string]$fileName, [string]$mode, [int]$codeFirst = 0, [string]$cd = '/game') {
     $enc = [System.Text.Encoding]::GetEncoding(28591)
     $load = [byte]0xEF                      # LOAD token
-    $lines = @(, $enc.GetBytes('.cd /game'))
+    $lines = @(, $enc.GetBytes(".cd $cd"))
     switch ($mode) {
         'tap' {
             # .tapein (as the Browser's TAP Loader does) also serves the loaders that call the ROM
@@ -1311,12 +1323,24 @@ function New-Autoexec([string]$fileName, [string]$mode, [int]$codeFirst = 0) {
         }
         'nex' { $lines += , $enc.GetBytes(".nexload $fileName") }
         'snx' { $lines += , ([byte[]](@([byte]0xA3) + $enc.GetBytes('"' + $fileName + '"'))) }     # SPECTRUM "name"
+        'sna' {
+            $lines += , ([byte[]](@([byte]0xFD) + (Get-BasicNumber 65367)))                                    # CLEAR
+            $lines += , ([byte[]]($enc.GetBytes('%s=%') + @([byte]0x88) + $enc.GetBytes('7&3:') +               # %s=%REG 7&3
+                @([byte]0xF7, 0xAC) + (Get-BasicNumber 3) + $enc.GetBytes(':') +                                  # RUN AT 3
+                @([byte]0xD5) + $enc.GetBytes('"c:/nextzxos/snapload.bas"')))                                     # MERGE
+            $lines += , ([byte[]](@([byte]0xF7, 0xAC) + $enc.GetBytes('%s:') +                                   # RUN AT %s
+                @([byte]0xF1) + $enc.GetBytes('f$="' + $fileName + '":') +                                        # LET
+                @([byte]0xF1) + $enc.GetBytes('adj=') + (Get-BasicNumber 0) + $enc.GetBytes(':') +                # LET
+                @([byte]0xEC) + (Get-BasicNumber 1)))                                                             # GO TO
+        }
         default { $lines += , ([byte[]](@($load) + $enc.GetBytes('"' + $fileName + '"'))) }
     }
     $prog = New-Object System.Collections.Generic.List[byte]
-    $num = 10
-    foreach ($body in $lines) { $prog.AddRange((New-BasicLine $num $body)); $num += 10 }
-    return New-Plus3Basic $prog.ToArray() 10
+    $first = $(if ($mode -eq 'sna') { 9990 } else { 10 })
+    $step = $(if ($mode -eq 'sna') { 1 } else { 10 })
+    $num = $first
+    foreach ($body in $lines) { $prog.AddRange((New-BasicLine $num $body)); $num += $step }
+    return New-Plus3Basic $prog.ToArray() $first
 }
 
 # number in a BASIC line: digits followed by its hidden 5-byte form (small integer)
@@ -1360,13 +1384,36 @@ function New-ZvmLoader([string]$basPath, [string]$story) {
     return New-Plus3Basic $prog.ToArray() $auto
 }
 
+# folder of the game in the image: /GAME, or the folder of an absolute path "c:/<folder>/" written
+# in the executable (e.g. TX-1696 loads its files from c:/tx-1696/, where its instructions put it)
+function Get-OsGameDir([string]$file) {
+    $fi = Get-Item -LiteralPath $file
+    if ($fi.Length -le 16MB) {
+        $text = [System.Text.Encoding]::GetEncoding(28591).GetString([System.IO.File]::ReadAllBytes($file))
+        $system = @($OsDirs + $OsOptDirs | ForEach-Object { ($_ -split '/')[0].ToLower() })
+        foreach ($m in [regex]::Matches($text, '[cC]:/([A-Za-z0-9_\-]{1,32})/')) {
+            if ($system -notcontains $m.Groups[1].Value.ToLower()) { return '/' + $m.Groups[1].Value.ToUpper() }
+        }
+    }
+    return '/GAME'
+}
+
 # creates the SD card image of the game; returns its path, $null if cancelled
 function New-OsImage($game) {
-    $sd = Find-SdImage
-    if (-not $sd) { return $null }
+    if ($game.SdImage) {
+        # the game's own image (nextzxos= in its section), e.g. an older NextZXOS for an old game
+        $sd = Resolve-SdImage $game.SdImage
+        if (-not (Test-Path -LiteralPath $sd -PathType Leaf)) { throw (T 'osBadImage' $sd) }
+    } else {
+        $sd = Find-SdImage
+        if (-not $sd) { return $null }
+    }
     $sys = Update-OsFiles $sd
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
-    $mode = switch ($ext) { '.tap' { 'tap' } '.nex' { 'nex' } '.snx' { 'snx' } default { if ($ZExts -contains $ext) { 'zvm' } else { 'bas' } } }
+    # .sna: with the Snapshot Loader (SNAPLOAD.BAS) as the Browser does; older NextZXOS without it
+    # (e.g. 2.06) start them with SPECTRUM, as for .snx
+    $snaMode = $(if (Test-Path -LiteralPath (Join-Path $sys 'NEXTZXOS\SNAPLOAD.BAS')) { 'sna' } else { 'snx' })
+    $mode = switch ($ext) { '.tap' { 'tap' } '.nex' { 'nex' } '.snx' { 'snx' } '.sna' { $snaMode } default { if ($ZExts -contains $ext) { 'zvm' } else { 'bas' } } }
     $codeFirst = 0
     if ($mode -eq 'tap' -and $game.Tap48) {
         $mode = 'tap48'
@@ -1376,7 +1423,8 @@ function New-OsImage($game) {
         try { [void]$fs.Read($head, 0, 4) } finally { $fs.Close() }
         if ($head[2] -eq 0 -and $head[3] -eq 3) { $codeFirst = 1 }
     }
-    $copies = @()                            # extra copies in c:/GAME, not saves of the game
+    $copies = @()                            # extra copies in the game folder of the image, not saves of the game
+    $gd = $(if ($mode -eq 'zvm') { '/GAME' } else { Get-OsGameDir $game.File })
     if ($mode -eq 'zvm' -and -not (Test-Path -LiteralPath (Join-Path $sys 'ZXZVM\NXZXZVM.BAS'))) { throw (T 'osNoZvm' $sd) }
     $exeDir = [System.IO.Path]::GetDirectoryName($game.File)
     $name = [System.IO.Path]::GetFileName($game.File)
@@ -1393,12 +1441,12 @@ function New-OsImage($game) {
     if (Test-Path -LiteralPath $img) { Remove-Item -LiteralPath $img -Force }
     Invoke-Hdfmonkey @('create', $img, "${mb}M")
     Invoke-Hdfmonkey @('putdir', $img, $sys, '/')
-    Invoke-Hdfmonkey @('mkdir', $img, '/GAME')
-    Invoke-Hdfmonkey @('putdir', $img, $exeDir, '/GAME')
+    Invoke-Hdfmonkey @('mkdir', $img, $gd)
+    Invoke-Hdfmonkey @('putdir', $img, $exeDir, $gd)
     # .run and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
     if (($mode -eq 'tap' -or $mode -eq 'tap48' -or $mode -eq 'nex') -and $name -cnotmatch '^[A-Za-z0-9_\-.]+$') {
         $name = 'GAME' + $ext.ToUpper()
-        Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
+        Invoke-Hdfmonkey @('put', $img, $game.File, "$gd/$name")
         $copies += $name
     }
     # BASIC programs saved without autostart (e.g. Orb Run) would only be loaded, not started:
@@ -1414,7 +1462,7 @@ function New-OsImage($game) {
             $name = 'GAME.BAS'
             $gb = Join-Path $OsWork $name
             [System.IO.File]::WriteAllBytes($gb, $b)
-            Invoke-Hdfmonkey @('put', $img, $gb, "/GAME/$name")
+            Invoke-Hdfmonkey @('put', $img, $gb, "$gd/$name")
             $copies += $name
         }
     }
@@ -1422,7 +1470,7 @@ function New-OsImage($game) {
     if ($mode -eq 'zvm') {
         if ($name -cnotmatch '^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$') {
             $name = 'STORY' + $ext.ToUpper()
-            Invoke-Hdfmonkey @('put', $img, $game.File, "/GAME/$name")
+            Invoke-Hdfmonkey @('put', $img, $game.File, "$gd/$name")
             $copies += $name
         }
         $zl = Join-Path $OsWork 'RUN.BAS'
@@ -1430,9 +1478,9 @@ function New-OsImage($game) {
         Invoke-Hdfmonkey @('put', $img, $zl, '/ZXZVM/RUN.BAS')
     }
     $ae = Join-Path $OsWork 'AUTOEXEC.BAS'
-    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode $codeFirst))
+    [System.IO.File]::WriteAllBytes($ae, (New-Autoexec $name $mode $codeFirst $gd.ToLower()))
     Invoke-Hdfmonkey @('put', $img, $ae, '/NEXTZXOS/AUTOEXEC.BAS')
-    return [pscustomobject]@{ Img = $img; Dir = $exeDir; Copies = $copies }
+    return [pscustomobject]@{ Img = $img; ImgDir = $gd; Dir = $exeDir; Copies = $copies }
 }
 
 # listing of a folder in an SD card image (hdfmonkey ls): lines "[DIR]<tab>name" or "size<tab>name"
@@ -1447,8 +1495,8 @@ function Get-HdfListing([string]$img, [string]$path) {
     return @($out -split "`r?`n" | Where-Object { $_ -ne '' })
 }
 
-# copies back into the game folder the files that the game created or changed in c:/GAME of the
-# image (saved games, high scores...); returns how many were copied
+# copies back into the game folder the files that the game created or changed in its folder of the
+# image, $imgDir (saved games, high scores...); returns how many were copied
 function Copy-OsSaves([string]$img, [string]$imgDir, [string]$hostDir, [string[]]$skip) {
     $n = 0
     $tmp = Join-Path $OsWork 'save.tmp'
@@ -1481,7 +1529,7 @@ function Complete-OsRuns {
         if (-not $r.Proc.HasExited) { continue }
         [void]$script:OsRuns.Remove($r)
         try {
-            $n = Copy-OsSaves $r.Img '/GAME' $r.Dir $r.Copies
+            $n = Copy-OsSaves $r.Img $r.ImgDir $r.Dir $r.Copies
             if ($n -gt 0) { $status.Text = T 'osSaved' $n }
         } catch {}
     }
@@ -1490,11 +1538,11 @@ function Complete-OsRuns {
 $osTimer.Add_Tick({ Complete-OsRuns })
 
 function Watch-OsRun($proc, $run) {
-    [void]$script:OsRuns.Add([pscustomobject]@{ Proc = $proc; Img = $run.Img; Dir = $run.Dir; Copies = $run.Copies })
+    [void]$script:OsRuns.Add([pscustomobject]@{ Proc = $proc; Img = $run.Img; ImgDir = $run.ImgDir; Dir = $run.Dir; Copies = $run.Copies })
     $osTimer.Start()
 }
 
-# $true if the game is started through NextZXOS: .bas/.tap/.z?, or a .nex/.snx with boot=nextzxos
+# $true if the game is started through NextZXOS: .bas/.tap/.z?, or a .nex/.snx/.sna with boot=nextzxos
 function Test-OsLaunch($game) {
     if (-not $game.File) { return $false }
     $ext = [System.IO.Path]::GetExtension($game.File).ToLower()
@@ -2024,7 +2072,7 @@ $miDelSav.Add_Click({
 })
 
 # opens the game folder in Explorer, with the executable selected when there is one
-# start the .nex/.snx through NextZXOS instead of CSpect's own loader (boot=nextzxos), for
+# start the .nex/.snx/.sna through NextZXOS instead of CSpect's own loader (boot=nextzxos), for
 # games that do not start when CSpect loads them directly
 $miOs.Add_Click({
     $g = $lst.SelectedItem
