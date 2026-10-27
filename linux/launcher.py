@@ -63,7 +63,7 @@ INI_PATH = os.path.join(ROOT, 'games.ini')
 GAME_EXTS = ('.nex', '.snx', '.sna')
 OS_EXTS = ('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started with NextZXOS (when there is no .nex/.snx/.sna)
 Z_EXTS = ('.z3', '.z4', '.z5', '.z7', '.z8')    # Z-machine text adventures, played with ZXZVM
-OS_NEX_EXTS = ('.nex', '.snx')                  # can also be started with NextZXOS (boot=nextzxos)
+OS_NEX_EXTS = ('.nex', '.snx', '.sna')          # can also be started with NextZXOS (boot=nextzxos)
 OS_DIRS = ('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
 OS_OPT_DIRS = ('GAMES/Z-Machine/ZXZVM',)        # optional: copied when the SD card image has it
 # NextZXOS system files and SD card images created on the fly
@@ -119,10 +119,10 @@ STRINGS = {
         "favRemove": "Remove from favorites",
         "tap48Menu": "Load in 48K mode",
         "compatMenu": "CSpect 3 compatibility",
-        "compatL2": "Layer 2 at bank 9 (as in CSpect 2)",
+        "compatL2": "Layer 2 at bank 9",
         "compatDiv": "DivMMC automap off",
-        "compatDd01": "DD 01 breakpoints as NOP (as in CSpect 2)",
-        "compatZero": "RAM cleared at start (as in CSpect 2)",
+        "compatDd01": "DD 01 breakpoints as NOP",
+        "compatZero": "RAM cleared at start",
         "favTip": "Show only favorite games",
         "delSavConfirm": "Delete {0} save file(s) of {1}?\n\n{2}\n\nThe files are moved to the Trash.",
         "delSavDone": "Save files deleted: {0}",
@@ -208,10 +208,10 @@ STRINGS = {
         "favRemove": "Togli dai preferiti",
         "tap48Menu": "Carica in modalità 48K",
         "compatMenu": "Compatibilità CSpect 3",
-        "compatL2": "Layer 2 al banco 9 (come in CSpect 2)",
+        "compatL2": "Layer 2 al banco 9",
         "compatDiv": "Mappatura automatica DivMMC spenta",
-        "compatDd01": "Breakpoint DD 01 come NOP (come in CSpect 2)",
-        "compatZero": "RAM azzerata all'avvio (come in CSpect 2)",
+        "compatDd01": "Breakpoint DD 01 come NOP",
+        "compatZero": "RAM azzerata all'avvio",
         "favTip": "Mostra solo i giochi preferiti",
         "delSavConfirm": "Eliminare {0} file di salvataggio di {1}?\n\n{2}\n\nI file vengono spostati nel Cestino.",
         "delSavDone": "Salvataggi eliminati: {0}",
@@ -297,10 +297,10 @@ STRINGS = {
         "favRemove": "Quitar de favoritos",
         "tap48Menu": "Cargar en modo 48K",
         "compatMenu": "Compatibilidad CSpect 3",
-        "compatL2": "Layer 2 en el banco 9 (como en CSpect 2)",
+        "compatL2": "Layer 2 en el banco 9",
         "compatDiv": "Mapeo automático DivMMC desactivado",
-        "compatDd01": "Breakpoints DD 01 como NOP (como en CSpect 2)",
-        "compatZero": "RAM a cero al inicio (como en CSpect 2)",
+        "compatDd01": "Breakpoints DD 01 como NOP",
+        "compatZero": "RAM a cero al inicio",
         "favTip": "Mostrar solo los juegos favoritos",
         "delSavConfirm": "¿Borrar {0} archivo(s) de partida de {1}?\n\n{2}\n\nLos archivos se mueven a la Papelera.",
         "delSavDone": "Partidas borradas: {0}",
@@ -386,10 +386,10 @@ STRINGS = {
         "favRemove": "Retirer des favoris",
         "tap48Menu": "Charger en mode 48K",
         "compatMenu": "Compatibilité CSpect 3",
-        "compatL2": "Layer 2 à la banque 9 (comme dans CSpect 2)",
+        "compatL2": "Layer 2 à la banque 9",
         "compatDiv": "Mappage automatique DivMMC désactivé",
-        "compatDd01": "Points d'arrêt DD 01 en NOP (comme dans CSpect 2)",
-        "compatZero": "RAM remise à zéro au démarrage (comme dans CSpect 2)",
+        "compatDd01": "Points d'arrêt DD 01 en NOP",
+        "compatZero": "RAM remise à zéro au démarrage",
         "favTip": "Afficher seulement les jeux favoris",
         "delSavConfirm": "Supprimer {0} fichier(s) de sauvegarde de {1} ?\n\n{2}\n\nLes fichiers sont placés dans la Corbeille.",
         "delSavDone": "Sauvegardes supprimées : {0}",
@@ -475,10 +475,10 @@ STRINGS = {
         "favRemove": "Aus Favoriten entfernen",
         "tap48Menu": "Im 48K-Modus laden",
         "compatMenu": "CSpect-3-Kompatibilität",
-        "compatL2": "Layer 2 auf Bank 9 (wie in CSpect 2)",
+        "compatL2": "Layer 2 auf Bank 9",
         "compatDiv": "Automatisches DivMMC-Mapping aus",
-        "compatDd01": "DD-01-Haltepunkte als NOP (wie in CSpect 2)",
-        "compatZero": "RAM beim Start gelöscht (wie in CSpect 2)",
+        "compatDd01": "DD-01-Haltepunkte als NOP",
+        "compatZero": "RAM beim Start gelöscht",
         "favTip": "Nur Lieblingsspiele anzeigen",
         "delSavConfirm": "{0} Spielstand-Datei(en) von {1} löschen?\n\n{2}\n\nDie Dateien werden in den Papierkorb verschoben.",
         "delSavDone": "Spielstände gelöscht: {0}",
@@ -660,7 +660,7 @@ def new_ini_file(lang, games, cspect, gargs):
         ';                  (default: zxnext.sd in the CSpect folder)',
         ';',
         ';  Per game: file= (executable), rating=1..5, hidden=1 (hidden game),',
-        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx',
+        ';  favorite=1, askfile=1 (always ask which executable), boot=nextzxos (start a .nex/.snx/.sna',
         ';  with NextZXOS), tapmode=48 (load a .tap in 48K mode),',
         ';  compat=l2bank9,nodivmmc,dd01nop,zeroram (fixes of the CSpect Compat plugin for old games in CSpect 3),',
         ';  title= image= args= optional',
@@ -1021,7 +1021,7 @@ def split_args(text):
 #  NextZXOS: starting .bas and .tap files
 #  CSpect cannot open them directly: a small SD card image is created on the fly
 #  with the NextZXOS files (taken from the user's image, e.g. zxnext.sd), the game
-#  in c:/GAME and an autoexec.bas that loads it at power on
+#  in c:/GAME (or the folder its executable expects) and an autoexec.bas that loads it at power on
 # ============================================================
 class FatImage:
     """Read-only access to a FAT32 SD card image, with or without a partition table."""
@@ -1209,7 +1209,7 @@ def plus3_basic(prog, autostart):
     return bytes(h) + prog
 
 
-# autoexec.bas: goes to c:/GAME and loads the game
+# autoexec.bas: goes to c:/GAME (or the folder cd, see os_game_dir) and loads the game
 #   bas:  .cd /game  -  LOAD "name.bas"
 #   tap:  .cd /game  -  .tapein name.tap (as the Browser's TAP Loader does: also serves the loaders that call
 #         the ROM tape routine directly)  -  SPECTRUM LOAD (NextZXOS Tape Loader in 128K mode, e.g. Tokimal)
@@ -1219,11 +1219,14 @@ def plus3_basic(prog, autostart):
 #   zvm:  .cd /game  -  LOAD "c:/zxzvm/run.bas" (ZXZVM loader made by make_zvm_loader)
 #   nex:  .cd /game  -  .nexload name.nex
 #   snx:  .cd /game  -  SPECTRUM "name.snx"
-def make_autoexec(file_name, mode, code_first=0):
+#   sna:  .cd /game  -  CLEAR 65367  -  %s=%REG 7&3: RUN AT 3: MERGE "c:/nextzxos/snapload.bas"  -
+#         RUN AT %s: LET f$="name.sna": LET adj=0: GO TO 1  (as the Browser does, with the MERGE at
+#         28 MHz; lines from 9990, after those of SNAPLOAD.BAS)
+def make_autoexec(file_name, mode, code_first=0, cd='/game'):
     load = b'\xef'                          # LOAD token
     name = file_name.encode('latin-1', 'replace')
     n = basic_number
-    lines = [b'.cd /game']
+    lines = [b'.cd ' + cd.encode('latin-1', 'replace')]
     if mode == 'tap':
         lines += [b'.tapein ' + name, b'\xa3' + load]              # SPECTRUM LOAD
     elif mode == 'tap48':
@@ -1238,9 +1241,19 @@ def make_autoexec(file_name, mode, code_first=0):
         lines += [b'.nexload ' + name]
     elif mode == 'snx':
         lines += [b'\xa3"' + name + b'"']                          # SPECTRUM "name"
+    elif mode == 'sna':
+        lines += [b'\xfd' + n(65367),                                                         # CLEAR
+                  b'%s=%' + b'\x88' + b'7&3:' +                                               # %s=%REG 7&3
+                  b'\xf7\xac' + n(3) + b':' +                                                  # RUN AT 3
+                  b'\xd5' + b'"c:/nextzxos/snapload.bas"',                                    # MERGE
+                  b'\xf7\xac' + b'%s:' +                                                       # RUN AT %s
+                  b'\xf1' + b'f$="' + name + b'":' +                                          # LET
+                  b'\xf1' + b'adj=' + n(0) + b':' +                                           # LET
+                  b'\xec' + n(1)]                                                             # GO TO
     else:
         lines += [load + b'"' + name + b'"']
-    return plus3_basic(b''.join(basic_line(10 * (i + 1), body) for i, body in enumerate(lines)), 10)
+    first, step = (9990, 1) if mode == 'sna' else (10, 10)
+    return plus3_basic(b''.join(basic_line(first + step * i, body) for i, body in enumerate(lines)), first)
 
 
 # ZXZVM loader: a copy of ZXZVM's NXZXZVM.BAS that keeps the lines up to its autostart line
@@ -1294,11 +1307,28 @@ def file_in_use(path):
     return False
 
 
+def os_game_dir(file):
+    """Folder of the game in the image: /GAME, or the folder of an absolute path "c:/<folder>/" written
+    in the executable (e.g. TX-1696 loads its files from c:/tx-1696/, where its instructions put it)."""
+    if os.path.getsize(file) <= 16 * 1024 * 1024:
+        with open(file, 'rb') as f:
+            text = f.read().decode('latin-1')
+        system = [d.split('/')[0].lower() for d in OS_DIRS + OS_OPT_DIRS]
+        for m in re.finditer(r'[cC]:/([A-Za-z0-9_\-]{1,32})/', text):
+            if m.group(1).lower() not in system:
+                return '/' + m.group(1).upper()
+    return '/GAME'
+
+
 def new_os_image(g, sd_image):
-    """Creates the SD card image of the game; returns {'img', 'dir', 'copies'}."""
+    """Creates the SD card image of the game; returns {'img', 'img_dir', 'dir', 'copies'}."""
     sysdir = update_os_files(sd_image)
     ext = os.path.splitext(g.file)[1].lower()
-    mode = {'.tap': 'tap', '.nex': 'nex', '.snx': 'snx'}.get(ext, 'zvm' if ext in Z_EXTS else 'bas')
+    # .sna: with the Snapshot Loader (SNAPLOAD.BAS) as the Browser does; older NextZXOS without it
+    # (e.g. 2.06) start them with SPECTRUM, as for .snx
+    snapload = any(f.lower() == 'snapload.bas' for f in os.listdir(os.path.join(sysdir, 'NEXTZXOS')))
+    mode = {'.tap': 'tap', '.nex': 'nex', '.snx': 'snx', '.sna': 'sna' if snapload else 'snx'}.get(
+        ext, 'zvm' if ext in Z_EXTS else 'bas')
     code_first = 0
     if mode == 'tap' and g.tap48:
         mode = 'tap48'
@@ -1307,7 +1337,8 @@ def new_os_image(g, sd_image):
             head = f.read(4)
         if len(head) == 4 and head[2] == 0 and head[3] == 3:
             code_first = 1
-    copies = []                             # extra copies in c:/GAME, not saves of the game
+    copies = []                             # extra copies in the game folder of the image, not saves of the game
+    gd = '/GAME' if mode == 'zvm' else os_game_dir(g.file)
     zvm_bas = os.path.join(sysdir, 'ZXZVM', 'NXZXZVM.BAS')
     if mode == 'zvm' and not os.path.isfile(zvm_bas):
         raise RuntimeError(T('osNoZvm', sd_image))
@@ -1331,12 +1362,12 @@ def new_os_image(g, sd_image):
         os.remove(img)
     run_hdfmonkey('create', img, '%dM' % mb)
     run_hdfmonkey('putdir', img, sysdir, '/')
-    run_hdfmonkey('mkdir', img, '/GAME')
-    run_hdfmonkey('putdir', img, exe_dir, '/GAME')
+    run_hdfmonkey('mkdir', img, gd)
+    run_hdfmonkey('putdir', img, exe_dir, gd)
     # .tapein and .nexload do not accept names with spaces or symbols: in that case a copy as GAME.TAP/.NEX
     if mode in ('tap', 'tap48', 'nex') and not re.match(r'^[A-Za-z0-9_\-.]+$', name):
         name = 'GAME' + ext.upper()
-        run_hdfmonkey('put', img, g.file, '/GAME/' + name)
+        run_hdfmonkey('put', img, g.file, gd + '/' + name)
         copies.append(name)
     # BASIC programs saved without autostart (e.g. Orb Run) would only be loaded, not started:
     # a copy as GAME.BAS that starts from its first line
@@ -1350,13 +1381,13 @@ def new_os_image(g, sd_image):
             gb = os.path.join(OS_WORK, name)
             with open(gb, 'wb') as f:
                 f.write(b)
-            run_hdfmonkey('put', img, gb, '/GAME/' + name)
+            run_hdfmonkey('put', img, gb, gd + '/' + name)
             copies.append(name)
     # ZXZVM gets a short 8.3 name: in other cases a copy as STORY.Zn
     if mode == 'zvm':
         if not re.match(r'^[A-Za-z0-9_\-]{1,8}\.[zZ][3-8]$', name):
             name = 'STORY' + ext.upper()
-            run_hdfmonkey('put', img, g.file, '/GAME/' + name)
+            run_hdfmonkey('put', img, g.file, gd + '/' + name)
             copies.append(name)
         zl = os.path.join(OS_WORK, 'RUN.BAS')
         with open(zl, 'wb') as f:
@@ -1364,9 +1395,9 @@ def new_os_image(g, sd_image):
         run_hdfmonkey('put', img, zl, '/ZXZVM/RUN.BAS')
     ae = os.path.join(OS_WORK, 'AUTOEXEC.BAS')
     with open(ae, 'wb') as f:
-        f.write(make_autoexec(name, mode, code_first))
+        f.write(make_autoexec(name, mode, code_first, gd.lower()))
     run_hdfmonkey('put', img, ae, '/NEXTZXOS/AUTOEXEC.BAS')
-    return {'img': img, 'dir': exe_dir, 'copies': copies}
+    return {'img': img, 'img_dir': gd, 'dir': exe_dir, 'copies': copies}
 
 
 def hdf_listing(img, path):
@@ -1383,8 +1414,8 @@ def hdf_listing(img, path):
 
 
 def copy_os_saves(img, img_dir, host_dir, skip):
-    """Copies back into the game folder the files that the game created or changed in c:/GAME of
-    the image (saved games, high scores...); returns how many were copied."""
+    """Copies back into the game folder the files that the game created or changed in its folder of
+    the image, img_dir (saved games, high scores...); returns how many were copied."""
     n = 0
     tmp = os.path.join(OS_WORK, 'save.tmp')
     for name, is_dir in hdf_listing(img, img_dir):
@@ -1425,7 +1456,7 @@ def complete_os_runs():
             continue
         OS_RUNS.remove(r)
         try:
-            total += copy_os_saves(r['img'], '/GAME', r['dir'], r['copies'])
+            total += copy_os_saves(r['img'], r['img_dir'], r['dir'], r['copies'])
         except (OSError, RuntimeError):
             pass
     return total
@@ -1444,7 +1475,7 @@ def compat_list(g):
 
 def test_os_launch(g):
     """True if the game is started through NextZXOS: .bas/.tap/.z? or a BASIC program without
-    extension, or a .nex/.snx with boot=nextzxos."""
+    extension, or a .nex/.snx/.sna with boot=nextzxos."""
     if not g.file:
         return False
     ext = os.path.splitext(g.file)[1].lower()
@@ -2376,10 +2407,6 @@ class Launcher:
         m.add_command(label=T('delSavMenu'), command=lambda: self._del_saves(g),
                       state='normal' if get_save_files(g) else 'disabled')
         m.add_command(label=T('openFolderMenu'), command=lambda: self._open_folder(g))
-        self.boot_os_var.set(g.boot_os)
-        nex = any(os.path.splitext(c)[1].lower() in OS_NEX_EXTS for c in g.candidates)
-        m.add_checkbutton(label=T('osMenu'), variable=self.boot_os_var, command=lambda: self._boot_os(g),
-                          state='normal' if nex else 'disabled', selectcolor=C_TEXT)
         # only for .tap games: the chosen executable, or any candidate when none is chosen yet
         if g.file:
             is_tap = g.file.lower().endswith('.tap')
@@ -2390,6 +2417,12 @@ class Launcher:
             m.add_checkbutton(label=T('tap48Menu'), variable=self.tap48_var, command=lambda: self._tap48(g),
                               selectcolor=C_TEXT)
         sub = tk.Menu(m, tearoff=0, bg=C_PANEL, fg=C_TEXT, activebackground='#0078d7', activeforeground='white')
+        # start with NextZXOS: also a compatibility choice
+        self.boot_os_var.set(g.boot_os)
+        nex = any(os.path.splitext(c)[1].lower() in OS_NEX_EXTS for c in g.candidates)
+        sub.add_checkbutton(label=T('osMenu'), variable=self.boot_os_var, command=lambda: self._boot_os(g),
+                            state='normal' if nex else 'disabled', selectcolor=C_TEXT)
+        sub.add_separator()
         current = compat_list(g)
         for opt, key in COMPAT_OPTIONS.items():
             self.compat_vars[opt].set(opt in current)
@@ -2460,7 +2493,7 @@ class Launcher:
         self.refresh_list()
 
     def _boot_os(self, g):
-        """Starts the .nex/.snx through NextZXOS instead of CSpect's own loader (boot=nextzxos)."""
+        """Starts the .nex/.snx/.sna through NextZXOS instead of CSpect's own loader (boot=nextzxos)."""
         g.boot_os = self.boot_os_var.get()
         try:
             set_ini_value(g.section, 'boot', 'nextzxos' if g.boot_os else '')
