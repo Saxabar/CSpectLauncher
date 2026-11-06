@@ -23,6 +23,7 @@
 # ============================================================
 
 import datetime
+import hashlib
 import os
 import re
 import shlex
@@ -48,7 +49,7 @@ except Exception:
 
 # ---------- program information ----------
 APP_NAME = 'CSpect Launcher'
-APP_VERSION = '1.6'
+APP_VERSION = '1.7'
 APP_COPYRIGHT = '(c) 2026 Giuseppe Papa - GPL-3.0'
 APP_URL = 'https://github.com/Saxabar/CSpectLauncher'
 CSPECT_URL = 'https://mdf200.itch.io/cspect'
@@ -66,6 +67,25 @@ Z_EXTS = ('.z3', '.z4', '.z5', '.z7', '.z8')    # Z-machine text adventures, pla
 OS_NEX_EXTS = ('.nex', '.snx', '.sna')          # can also be started with NextZXOS (boot=nextzxos)
 OS_DIRS = ('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
 OS_OPT_DIRS = ('GAMES/Z-Machine/ZXZVM',)        # optional: copied when the SD card image has it
+
+# Settings of known games, found by the MD5 of their executable when a new folder is added:
+# compat= options, boot=nextzxos, extra CSpect parameters
+KNOWN_GAMES = {
+    '5d61d266623cf23e74f9ad00bf5796a5': {'compat': 'divfirst,im2ff'},  # 4K Race Next
+    'd0f9bd2b90329d8f229388d9ce2941f3': {'compat': 'divnmi'},  # Atic Atac Next
+    '03385b1946d6dde44e0f0d04103ae918': {'compat': 'nodivmmc'},  # Deltas Shadow
+    '7e96dc89ffb41310eed2bb32e8fab82a': {'compat': 'l2bank9'},  # Dweebs Drop
+    'fa73d26d9193baa5f0f2359f2493befa': {'compat': 'dd01nop'},  # Elite Next
+    '7b983153cdd91d2ad20ae26d07555b54': {'boot': 'nextzxos'},  # Lords of Midnight
+    '0c96b9e483318b77d95e4165479ce727': {'compat': 'im2ff'},  # Manic Miner Trick Or Treat AY
+    '4d94f98ab1ee9e3bdf879c5599f78a36': {'compat': 'l2bank9'},  # Montana Mike
+    '488911a08bba3334945fbf40b91ee638': {'boot': 'nextzxos'},  # Sabre Wulf
+    'fc6506073362dd78f332d64427e19f15': {'compat': 'im2ff'},  # Space Racing
+    '5ca82daa919db158562405e19dad4500': {'compat': 'zeroram'},  # Spice Invaderz
+    'a33bd3a986b7c2bb430b3c3837dec8ce': {'compat': 'sdstream,pal44,ctcirq', 'boot': 'nextzxos'},  # The Way of the Exploding Fist (2024)
+    'cdfcd69c3c824983e5f191a00caaa4ca': {'compat': 'notemu,pal44', 'boot': 'nextzxos', 'extra': '-60'},  # The Way of the Exploding Fist (2023)
+    '30572731ff07fb1cd89278ca4cd4cf47': {'boot': 'nextzxos', 'extra': '-60'},  # TX-1696
+}
 # NextZXOS system files and SD card images created on the fly
 OS_WORK = (os.path.join(os.environ.get('TEMP', ''), 'CSpectLauncher') if IS_WIN else
            os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'cspect-launcher'))
@@ -884,6 +904,22 @@ def update_display(g):
     g.display = d
 
 
+def find_known_game(folder, cands):
+    """The executable of a new folder that is in KNOWN_GAMES, with its settings; None if there is none."""
+    for c in cands:
+        md5 = hashlib.md5()
+        try:
+            with open(os.path.join(folder, c), 'rb') as f:
+                for chunk in iter(lambda: f.read(1 << 20), b''):
+                    md5.update(chunk)
+        except OSError:
+            continue
+        known = KNOWN_GAMES.get(md5.hexdigest())
+        if known:
+            return c, known
+    return None
+
+
 def get_games():
     ini = load_settings()
     games = []
@@ -899,15 +935,27 @@ def get_games():
     except OSError:
         pass
 
-    # new games are added to games.ini (file= only when there is a single executable)
+    # new games are added to games.ini (file= only when there is a single executable or a known game)
     to_add = []
     for d in dirs:
         if ini_section(ini, d.name) is not None:
             continue
         cands = get_candidates(d.path)
         fname = cands[0] if len(cands) == 1 else ''
-        to_add += ['', '[' + d.name + ']', 'file=' + fname]
-        ini[d.name] = {'file': fname}
+        to_add += ['', '[' + d.name + ']']
+        ini[d.name] = {}
+        known = find_known_game(d.path, cands)
+        if known:
+            fname = known[0]
+            for key in ('compat', 'boot'):
+                if key in known[1]:
+                    to_add.append(key + '=' + known[1][key])
+                    ini[d.name][key] = known[1][key]
+            if 'extra' in known[1]:
+                ini[d.name]['args'] = S.global_args + ' ' + known[1]['extra']
+                to_add.append('args=' + ini[d.name]['args'])
+        to_add.append('file=' + fname)
+        ini[d.name]['file'] = fname
     if to_add:
         try:
             lines = _read_lines()

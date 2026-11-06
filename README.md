@@ -1,7 +1,7 @@
 # CSpect Launcher
 
 A game launcher for the ZX Spectrum Next emulator **CSpect**.
-Version 1.6 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
+Version 1.7 · © 2026 Giuseppe Papa · [GPL-3.0](LICENSE)
 
 ![CSpect Launcher](screenshot.png)
 
@@ -20,6 +20,7 @@ The interface is available in **English, Italian, Spanish, French and German**.
 - NextBASIC (`.bas`), tape (`.tap`) and Z-machine text adventure (`.z3`–`.z8`) games started automatically through NextZXOS
 - Per-game launch parameters, custom titles and hidden games
 - Fixes for old games that crash in CSpect 3, with the [CSpect Compat](https://github.com/Saxabar/CSpectCompat) plugin
+- Known games set up automatically: when a new folder is added, its fixes and launch parameters are chosen by the MD5 of its executable
 - Delete a game's save files (moved to the Recycle Bin)
 - Settings for language, folders, window size (1x–4x) and full screen
 - Everything stored in a plain `games.ini` file
@@ -216,7 +217,7 @@ tapmode=48
 | `hidden` | `1` = hide the game |
 | `favorite` | `1` = favorite game |
 | `tapmode` | `48` = load the `.tap` in 48K mode |
-| `compat` | fixes of the CSpect Compat plugin for this game, comma-separated: `l2bank9`, `nodivmmc`, `dd01nop`, `zeroram` (passed to CSpect in the `CSPECT_COMPAT` variable) |
+| `compat` | fixes of the CSpect Compat plugin for this game, comma-separated, e.g. `l2bank9`, `nodivmmc`, `dd01nop`, `zeroram`; the full list is in its README (passed to CSpect in the `CSPECT_COMPAT` variable) |
 | `boot` | `nextzxos` = start the `.nex` / `.snx` / `.sna` through NextZXOS |
 | `askfile` | `1` = ask which executable to start at every launch ("Always use this executable" unchecked) |
 

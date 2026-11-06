@@ -3,6 +3,10 @@
 All notable changes to CSpect Launcher.
 Each version has a "## <version>" section, used as the text of the GitHub release.
 
+## 1.7
+
+- New game folders: known games are recognised by the MD5 of their executable and get their fixes and launch parameters automatically
+
 ## 1.6
 
 - "Start with NextZXOS" also works for .sna games, loaded with the NextZXOS Snapshot Loader as the Browser does

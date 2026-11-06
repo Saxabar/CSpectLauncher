@@ -23,7 +23,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic     # to move files to the Recycle 
 
 # ---------- program information (About window) ----------
 $AppName      = 'CSpect Launcher'
-$AppVersion   = '1.6'
+$AppVersion   = '1.7'
 $AppCopyright = '(c) 2026 Giuseppe Papa - GPL-3.0'
 $AppUrl       = 'https://github.com/Saxabar/CSpectLauncher'   # page for updates
 $CSpectUrl    = 'https://mdf200.itch.io/cspect'
@@ -35,6 +35,25 @@ $OsExts      = @('.bas', '.tap', '.z3', '.z4', '.z5', '.z7', '.z8')   # started 
 $ZExts       = @('.z3', '.z4', '.z5', '.z7', '.z8')  # Z-machine text adventures, played with ZXZVM
 $OsNexExts   = @('.nex', '.snx', '.sna')             # can also be started with NextZXOS (boot=nextzxos)
 $OsDirs      = @('NEXTZXOS', 'SYS', 'DOT', 'MACHINES')
+
+# Settings of known games, found by the MD5 of their executable when a new folder is added:
+# compat= options, boot=nextzxos, extra CSpect parameters
+$KnownGames = @{
+    '5d61d266623cf23e74f9ad00bf5796a5' = @{ compat = 'divfirst,im2ff' }                                  # 4K Race Next
+    'd0f9bd2b90329d8f229388d9ce2941f3' = @{ compat = 'divnmi' }                                          # Atic Atac Next
+    '03385b1946d6dde44e0f0d04103ae918' = @{ compat = 'nodivmmc' }                                        # Deltas Shadow
+    '7e96dc89ffb41310eed2bb32e8fab82a' = @{ compat = 'l2bank9' }                                         # Dweebs Drop
+    'fa73d26d9193baa5f0f2359f2493befa' = @{ compat = 'dd01nop' }                                         # Elite Next
+    '7b983153cdd91d2ad20ae26d07555b54' = @{ boot = 'nextzxos' }                                          # Lords of Midnight
+    '0c96b9e483318b77d95e4165479ce727' = @{ compat = 'im2ff' }                                           # Manic Miner Trick Or Treat AY
+    '4d94f98ab1ee9e3bdf879c5599f78a36' = @{ compat = 'l2bank9' }                                         # Montana Mike
+    '488911a08bba3334945fbf40b91ee638' = @{ boot = 'nextzxos' }                                          # Sabre Wulf
+    'fc6506073362dd78f332d64427e19f15' = @{ compat = 'im2ff' }                                           # Space Racing
+    '5ca82daa919db158562405e19dad4500' = @{ compat = 'zeroram' }                                         # Spice Invaderz
+    'a33bd3a986b7c2bb430b3c3837dec8ce' = @{ compat = 'sdstream,pal44,ctcirq'; boot = 'nextzxos' }        # The Way of the Exploding Fist (2024)
+    'cdfcd69c3c824983e5f191a00caaa4ca' = @{ compat = 'notemu,pal44'; boot = 'nextzxos'; extra = '-60' }  # The Way of the Exploding Fist (2023)
+    '30572731ff07fb1cd89278ca4cd4cf47' = @{ boot = 'nextzxos'; extra = '-60' }                           # TX-1696
+}
 $OsOptDirs   = @('GAMES/Z-Machine/ZXZVM')            # optional: copied when the SD card image has it
 $OsWork      = Join-Path $env:TEMP 'CSpectLauncher' # system files and SD card images created on the fly
 $ImageExts   = @('.png', '.jpg', '.jpeg', '.gif', '.bmp')
@@ -914,6 +933,21 @@ function Find-Image([string]$folder, [string]$imageCfg, [string]$gameFile) {
 }
 
 # scan of the games folder
+# the executable of a new folder that is in $KnownGames, with its settings; $null if there is none
+function Find-KnownGame([string]$folder, [string[]]$cands) {
+    $md5 = [System.Security.Cryptography.MD5]::Create()
+    try {
+        foreach ($c in $cands) {
+            try {
+                $s = [System.IO.File]::OpenRead((Join-Path $folder $c))
+                try { $hash = [BitConverter]::ToString($md5.ComputeHash($s)).Replace('-', '').ToLowerInvariant() } finally { $s.Close() }
+            } catch { continue }
+            if ($KnownGames.ContainsKey($hash)) { return @{ File = $c; Settings = $KnownGames[$hash] } }
+        }
+    } finally { $md5.Dispose() }
+    return $null
+}
+
 function Get-Games {
     $ini = Load-Settings
     $list = New-Object System.Collections.ArrayList
@@ -924,15 +958,28 @@ function Get-Games {
     # folders that disappeared: remove their settings
     try { Remove-OrphanSections @($dirs | ForEach-Object { $_.Name }) } catch {}
 
-    # new games: added to the ini (file= only when there is a single executable)
+    # new games: added to the ini (file= only when there is a single executable or a known game)
     $toAdd = ''
     foreach ($dir in $dirs) {
         if ($ini.ContainsKey($dir.Name)) { continue }
         $cands = @(Get-Candidates $dir.FullName)
         $fname = ''
         if ($cands.Count -eq 1) { $fname = $cands[0] }
-        $toAdd += "`r`n[$($dir.Name)]`r`nfile=$fname`r`n"
-        $ini[$dir.Name] = @{ file = $fname }
+        $toAdd += "`r`n[$($dir.Name)]`r`n"
+        $ini[$dir.Name] = @{}
+        $known = Find-KnownGame $dir.FullName $cands
+        if ($known) {
+            $fname = $known.File
+            foreach ($key in 'compat', 'boot') {
+                if ($known.Settings[$key]) { $toAdd += "$key=$($known.Settings[$key])`r`n"; $ini[$dir.Name][$key] = $known.Settings[$key] }
+            }
+            if ($known.Settings['extra']) {
+                $toAdd += "args=$($script:GlobalArgs) $($known.Settings['extra'])`r`n"
+                $ini[$dir.Name]['args'] = "$($script:GlobalArgs) $($known.Settings['extra'])"
+            }
+        }
+        $toAdd += "file=$fname`r`n"
+        $ini[$dir.Name]['file'] = $fname
     }
     if ($toAdd -ne '') {
         try {
